@@ -1,14 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:one_click_builder/themes/Fuzzy/utility/plugin_list.dart';
 import 'package:one_click_builder/themes/Nexus/Controllers/profile/profileController.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/orderDetails.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ProfileDashboardScreen extends StatelessWidget {
-  ProfileDashboardScreen({super.key});
+class ProfileDashboardScreen extends StatefulWidget {
+  const ProfileDashboardScreen({super.key});
 
+  @override
+  State<ProfileDashboardScreen> createState() => _ProfileDashboardScreenState();
+}
+
+class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
   final ProfileOrdersController controller = Get.put(ProfileOrdersController());
+
+
+
+Future<Map<String, String>> _loadPrefs() async {
+  final prefs = await SharedPreferences.getInstance();
+  return {
+    'name': prefs.getString('name') ?? '',
+    'email': prefs.getString('email') ?? '',
+    'mobile': prefs.getString('mobile') ?? '',
+    'profilePicture': prefs.getString('profilePicture') ?? '',
+  };
+}
+
+
+@override
+void initState() {
+  super.initState();
+  _loadPrefs();
+}
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +46,17 @@ class ProfileDashboardScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return  Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),);
+          return Center(
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                width: 120,
+                height: 20,
+                color: Colors.white,
+              ),
+            ),
+          );
         }
 
         return SingleChildScrollView(
@@ -58,47 +84,66 @@ class ProfileDashboardScreen extends StatelessWidget {
   // =======================================================
   // PROFILE CARD
   // =======================================================
-  Widget _profileCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage: controller.avatar.isNotEmpty
-                ? NetworkImage(controller.avatar)
-                : null,
-            child: controller.avatar.isEmpty
-                ? const Icon(Icons.person, size: 36)
-                : null,
+Widget _profileCard() {
+  return FutureBuilder(
+    future: _loadPrefs(),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  controller.userName,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  controller.userEmail,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final data = snapshot.data!;
+      final name = data['name'] ?? '';
+      final email = data['email'] ?? '';
+      final avatar = data['profilePicture'] ?? '';
+
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 36,
+              backgroundColor: Colors.grey.shade200,
+              backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+              child:
+                  avatar.isEmpty ? const Icon(Icons.person, size: 36) : null,
             ),
-          )
-        ],
-      ),
-    );
-  }
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    },
+  );
+}
+
 
   // =======================================================
   // STATS GRID (3 CARDS)
@@ -159,23 +204,47 @@ class ProfileDashboardScreen extends StatelessWidget {
       ),
     );
   }
-  void _openOrderItems(BuildContext context, String orderId) {
-  // showModalBottomSheet(
-  //   context: context,
-  //   isScrollControlled: true,
-  //   backgroundColor: Colors.white,
-  //   shape: const RoundedRectangleBorder(
-  //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-  //   ),
-  //   builder: (_) => 
-  // );
-}
 
+  void _openOrderItems(BuildContext context, String orderId) {
+    // showModalBottomSheet(
+    //   context: context,
+    //   isScrollControlled: true,
+    //   backgroundColor: Colors.white,
+    //   shape: const RoundedRectangleBorder(
+    //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    //   ),
+    //   builder: (_) => OrderDetailsScreen(orderId: orderId),
+    // );
+  }
 
   // =======================================================
   // ORDERS LIST
   // =======================================================
   Widget _ordersList() {
+    // 🔥 If no orders found
+    if (controller.orders.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 50),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 100),
+            child: Column(
+              children: [
+                Icon(Icons.shopping_bag_outlined, size: 70, color: Colors.grey),
+                const SizedBox(height: 12),
+                const Text(
+                  "No Recent Orders Found",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return ListView.builder(
       itemCount: controller.orders.length,
       shrinkWrap: true,
@@ -190,10 +259,9 @@ class ProfileDashboardScreen extends StatelessWidget {
             : null;
 
         return GestureDetector(
-                  onTap: () {
-          _openOrderItems(context, order.orderId);
-        },
-
+          onTap: () {
+            _openOrderItems(context, order.orderId);
+          },
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
@@ -242,7 +310,8 @@ class ProfileDashboardScreen extends StatelessWidget {
                       Text(
                         DateFormat("dd MMM yyyy, hh:mm a")
                             .format(order.createdAt),
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),

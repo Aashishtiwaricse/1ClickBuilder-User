@@ -55,30 +55,34 @@ class _AllSubCategoryState extends State<AllSubCategory> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.subcategoryName)),
       body: loading
-          ?  Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),)
+          ? Center(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 120,
+                  height: 20,
+                  color: Colors.white,
+                ),
+              ),
+            )
           : Row(
               children: [
                 Expanded(
                   child: GridView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: products.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      mainAxisExtent: 390,
+                      //  mainAxisExtent: 390,
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20,
+                      childAspectRatio: width < 360 ? 0.52 : 0.55,
                     ),
                     itemBuilder: (context, i) => _buildProductCard(products[i]),
                   ),
@@ -117,21 +121,33 @@ class _AllSubCategoryState extends State<AllSubCategory> {
         : "";
 
     // ---------------- SAFE PRICE ----------------
-    int price = 0;
+  // ---------------- SAFE PRICE (ALWAYS FROM IMAGE → SIZE) ----------------
+// ---------------- SAFE PRICE (ALWAYS FROM IMAGE → SIZE) ----------------
+double rawPrice = 0;
 
-    if (product!.images != null &&
-        product.images!.isNotEmpty &&
-        product.images!.first.sizes != null &&
-        product.images!.first.sizes!.isNotEmpty) {
-      price =
-          int.tryParse(product.images!.first.sizes!.first.price ?? "0") ?? 0;
-    } else {
-      price = product.price ?? 0;
-    }
+if (product.images != null &&
+    product.images!.isNotEmpty &&
+    product.images!.first.sizes != null &&
+    product.images!.first.sizes!.isNotEmpty &&
+    product.images!.first.sizes!.first.price != null) {
+  rawPrice = double.tryParse(
+          product.images!.first.sizes!.first.price!.toString()) ??
+      0;
+} else {
+  rawPrice = (product.price ?? 0).toDouble();
+}
 
-    final int mrp = product.price ?? price;
-    final int discount =
-        mrp > price ? (((mrp - price) / mrp) * 100).round() : 0;
+// UI price
+final int displayPrice = rawPrice.round();
+
+// MRP
+final int mrp = product.mrpPrice ?? displayPrice;
+
+// Discount %
+final int discount =
+    mrp > displayPrice ? (((mrp - displayPrice) / mrp) * 100).round() : 0;
+
+
 
     return GestureDetector(
       onTap: () {
@@ -152,12 +168,10 @@ class _AllSubCategoryState extends State<AllSubCategory> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // IMAGE
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(15)),
+            AspectRatio(
+              aspectRatio: 1,
               child: Image.network(
                 imageUrl,
-                height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) =>
@@ -165,101 +179,99 @@ class _AllSubCategoryState extends State<AllSubCategory> {
               ),
             ),
 
-            // TITLE
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-
-            // PRICE
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
+            // CONTENT AREA (flexible)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "₹$price",
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                  // TITLE
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  if (mrp > price)
-                    Text(
-                      "₹$mrp",
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
-                      ),
+
+                  // PRICE
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        Text(
+                          "₹$displayPrice",
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 6),
+                        if (mrp > displayPrice)
+                          Text(
+                            "₹$mrp",
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Colors.grey,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                        const SizedBox(width: 6),
+                        if (discount > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade600,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "$discount%",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                const Icon(
+                                  Icons.arrow_downward,
+                                  color: Colors.white,
+                                  size: 10,
+                                ),
+                              ],
+                            ),
+                          )
+                      ],
                     ),
-                  const SizedBox(width: 8),
-                  if (discount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                  ),
+
+                  const Spacer(), // ✅ now works perfectly
+
+                  // BUY BUTTON
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    child: Container(
+                      width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.green.shade600,
-                        borderRadius: BorderRadius.circular(5),
+                        color: const Color(0xfff3c0e6),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        "$discount% OFF",
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 12),
+                      padding: const EdgeInsets.all(8),
+                      child: const Center(
+                        child: Text(
+                          "BUY NOW",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.width * 0.02),
-
-            // COLORS
-         allColors.isNotEmpty
-    ? Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
-          children: allColors.map((colorHex) {
-            return Container(
-              margin: const EdgeInsets.only(right: 8),
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black26, width: 1),
-                color: _hexToColor(colorHex),
-              ),
-            );
-          }).toList(),
-        ),
-      )
-    : const SizedBox(height: 28), // <-- Keep fixed height when empty
-
-
-            SizedBox(height: MediaQuery.of(context).size.width * 0.03),
-
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.7,
-                decoration: BoxDecoration(
-                  color: Color(0xfff3c0e6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Center(
-                    child: Text(
-                      "BUY NOW",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                  ),
-                ),
-              ),
-            )
           ],
         ),
       ),

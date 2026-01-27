@@ -9,6 +9,9 @@ class BestSellerService {
       final url =
           "${NexusAppConstant.baseUrl}${NexusAppConstant.bestSellingProduct}$vendorId";
 
+
+          print("BestSeller ${url}");
+
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

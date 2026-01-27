@@ -8,8 +8,6 @@ import 'package:one_click_builder/themes/Nexus/Screens/Home/NexusProduct/viewall
 import 'package:one_click_builder/themes/Nexus/api/NexusProduct/nexusProduct.dart';
 import 'package:shimmer/shimmer.dart';
 
-
-
 class NewArrivalSection extends StatefulWidget {
   const NewArrivalSection({super.key});
 
@@ -20,6 +18,7 @@ class NewArrivalSection extends StatefulWidget {
 class _NewArrivalSectionState extends State<NewArrivalSection> {
   ProductListResponse? response;
   bool loading = false;
+  bool _apiRunning = false;
 
   final NexusVendorController vendorController =
       Get.find<NexusVendorController>();
@@ -50,20 +49,23 @@ class _NewArrivalSectionState extends State<NewArrivalSection> {
   }
 
   Future<void> _loadProducts(String vendorId) async {
+    if (_apiRunning) return; // ✅ stop parallel calls
+    _apiRunning = true;
+
     setState(() => loading = true);
 
     try {
       final res = await ProductService().getProducts(vendorId);
       if (!mounted) return;
 
-      setState(() {
-        response = res;
-        loading = false;
-      });
+      if (res != null && res.products.isNotEmpty) {
+        setState(() => response = res);
+      }
     } catch (e) {
-      debugPrint("Product API error: $e");
-      if (!mounted) return;
-      setState(() => loading = false);
+      debugPrint("❌ Product API error: $e");
+    } finally {
+      if (mounted) setState(() => loading = false);
+      _apiRunning = false;
     }
   }
 
@@ -80,39 +82,31 @@ class _NewArrivalSectionState extends State<NewArrivalSection> {
 
       // ⏳ Vendor not ready yet
       if (vendorId.isEmpty) {
-        return  SizedBox(
+        return SizedBox(
           height: 420,
-          child: Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),),
+          child: Center(
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                width: 120,
+                height: 20,
+                color: Colors.white,
+              ),
+            ),
+          ),
         );
       }
-
       return SizedBox(
-        height: 370,
+  height: MediaQuery.of(context).size.height < 700 ? 310 : 380,
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _header(context),
             const SizedBox(height: 10),
             Expanded(
-              child: loading
-                  ?  Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),)
-                  : _productList(),
+              child: loading ? _shimmerList() : _productList(),
             ),
           ],
         ),
@@ -120,8 +114,73 @@ class _NewArrivalSectionState extends State<NewArrivalSection> {
     });
   }
 
+Widget _shimmerList() {
+  return ListView.separated(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    scrollDirection: Axis.horizontal,
+    itemCount: 5,
+    separatorBuilder: (_, __) => const SizedBox(width: 16),
+    itemBuilder: (_, __) {
+      return SizedBox(
+        width: 220,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image shimmer
+              Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Title shimmer
+              Container(
+                height: 12,
+                width: 140,
+                color: Colors.grey.shade300,
+              ),
+              const SizedBox(height: 6),
+
+              // Price shimmer
+              Container(
+                height: 14,
+                width: 100,
+                color: Colors.grey.shade300,
+              ),
+              const SizedBox(height: 10),
+
+              // Button shimmer
+              Container(
+                height: 38,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
   Widget _productList() {
-    final items = response?.products ?? [];
+    final items =
+        response?.products.where((e) => e.product != null).toList() ?? [];
 
     if (items.isEmpty) {
       return const Center(child: Text("No products available"));
@@ -134,8 +193,8 @@ class _NewArrivalSectionState extends State<NewArrivalSection> {
       separatorBuilder: (_, __) => const SizedBox(width: 16),
       itemBuilder: (context, index) {
         return SizedBox(
+          //height: 320,
           width: 220,
-        //  height: 100,
           child: NexusProductCard(product: items[index].product!),
         );
       },
@@ -144,7 +203,7 @@ class _NewArrivalSectionState extends State<NewArrivalSection> {
 
   Widget _header(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -154,12 +213,13 @@ class _NewArrivalSectionState extends State<NewArrivalSection> {
           ),
           GestureDetector(
             onTap: () {
-              if (response == null) return;
+              final products = response?.products ?? [];
+              if (products.isEmpty) return;
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      ViewAllProductsScreen(products: response!.products),
+                  builder: (_) => ViewAllProductsScreen(products: products),
                 ),
               );
             },

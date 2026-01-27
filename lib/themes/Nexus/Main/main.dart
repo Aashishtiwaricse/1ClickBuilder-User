@@ -41,48 +41,14 @@ class _NexusMainState extends State<NexusMain> {
   /// ✅ GetX Controllers (GLOBAL)
   final NexusVendorController vendorCtrl = Get.find<NexusVendorController>();
 
-  // @override
-  // void initState() {
-  //   super.initState();
 
-  //   /// ✅ Register controllers once
-  //   Get.put(CategoryUIController(), permanent: true);
-  // final cartCtrl = Get.put(CartController(), permanent: true);
-
-  //   /// ✅ Decide Vendor ID source
-  //   ///   /// LOAD vendor from prefs
-  // vendorCtrl.loadVendorFromStorage().then((_) async {
-  //   final vendorId = vendorCtrl.vendorId.value;
-
-  //   if (vendorId.isNotEmpty) {
-  //     await cartCtrl.checkLogin(vendorId);
-  //    // await cartCtrl.loadCart(vendorId);
-  //   }
-  // });
-
-
-
-  
-
-  //   /// ⏳ Splash delay (1 second)
-  //   Future.delayed(const Duration(seconds: 2), () {
-  //     if (mounted) {
-  //       setState(() {
-  //         _showSplash = false;
-  //       });
-  //     }
-  //   });
-
-  //     Get.put(GuestCartController());
-  //     final prefs =  SharedPreferences.getInstance();
-  // Get.put(prefs);
-  // }
 
 @override
 void initState() {
   super.initState();
   initializeControllers();  // async setup
 }
+
 void initializeControllers() async {
 
   /// 👍 Register SharedPreferences correctly

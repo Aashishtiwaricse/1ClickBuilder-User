@@ -4,21 +4,20 @@ import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NexusAuthService {
-
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String input, String password) async {
+    print("${input}.   ${password}");
     try {
-      print("📤 Login API: ${NexusAppConstant.baseUrl}${NexusAppConstant.loginUrl}");
-      print("📤 Request Body: { email: $email, password: ****** }");
+      final body = {
+        "email": input, // <-- ALWAYS THIS, even phone number
+        "password": password,
+      };
+
+      print("📤 Request Body: $body");
 
       final response = await http.post(
-        Uri.parse(
-          "${NexusAppConstant.baseUrl}${NexusAppConstant.loginUrl}",
-        ),
+        Uri.parse("${NexusAppConstant.baseUrl}${NexusAppConstant.loginUrl}"),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "email": email,
-          "password": password,
-        }),
+        body: jsonEncode(body),
       );
 
       print("📥 Status Code: ${response.statusCode}");
@@ -33,20 +32,19 @@ class NexusAuthService {
 
           final prefs = await SharedPreferences.getInstance();
 
-          await prefs.setString('user_id', data['id']);
+//          await prefs.setString('user_id', data['id']);
           await prefs.setString('token', data['token']);
-          await prefs.setString('refresh_token', data['refreshToken']);
-          await prefs.setString('name', user['firstName']);
-          await prefs.setString('email', user['email']);
+          await prefs.setString('email', user['email'] ?? '');
+          await prefs.setString('name', user['firstName'] ?? '');
           await prefs.setString('mobile', user['mobile'] ?? '');
           await prefs.setString(
               'profile_picture', user['profilePicture'] ?? '');
-          await prefs.setString('role', user['role']);
+          await prefs.setString('role', user['role'] ?? '');
 
           print("💾 Login success — user saved");
           print("🆔 user_id: ${data['id']}");
 
-                    print("🆔 token: ${data['token']}");
+          print("🆔 token: ${data['token']}");
           print("👤 role: ${user['role']}");
 
           return true;

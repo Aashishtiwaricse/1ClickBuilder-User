@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/api/cart/nexusAddtoCart.dart';
+import 'package:one_click_builder/themes/Nexus/api/Sigin/guestsigin.dart';
 import 'package:one_click_builder/themes/Nexus/api/cart/nexusCart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -23,16 +23,32 @@ var isLoading = false.obs;
   var isAddingToCart = false.obs; // ✅ MISSING (NOW ADDED)
   var cart = Rxn<CartResponse>();
     var isLoggedIn = false.obs;
+    var deletingItemId = "".obs; // 👈 track which item is being deleted
+
+RxInt cartCount = 0.obs; // ✅ no conflict now
 
 
-  Future<void> checkLogin() async {
+
+Future<void> checkLogin(String vendorId) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
 
-  debugPrint("🔑 TOKEN FROM PREFS: $token");
+  debugPrint("🔑 Main User Token: $token");
 
-  isLoggedIn.value = token != null && token.isNotEmpty;
+  if (token != null && token.isNotEmpty) {
+    isLoggedIn.value = true;
+    return;
+  }
+
+  // User NOT logged in → guest login
+  String? guestToken = await guestLogin(vendorId);
+
+ 
+
+  isLoggedIn.value = false;
 }
+
+
 
 
   /// ================= LOAD CART =================
@@ -42,6 +58,8 @@ Future<void> loadCart(String vendorId) async {
 
     final response = await CartService.fetchCart(vendorId);
     cart.value = response;
+cartCount.value = response.totalQuantity;
+
 
     debugPrint("✅ Cart loaded: ${response.items.length} items");
   } catch (e) {
@@ -80,59 +98,198 @@ Future<void> loadCart(String vendorId) async {
   }
 
   /// ================= DELETE ITEM =================
-  Future<void> removeItem({
-    required String cartId,
-    required String vendor_id,
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+  /// 
+  /// 
+  /// 
 
-    if (token == null || token.isEmpty) return;
+
+Future<void> removeItem({
+  required String cartItemId,
+  required String VendorId,
+}) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+
+  if (token == null || token.isEmpty) {
+    Get.snackbar(
+      'Session Expired',
+      'Please login again',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+    return;
+  }
+
+  try {
+    deletingItemId.value = cartItemId; // 👈 START loader
 
     final url =
-        'https://api.1clickbuilder.com/api/cart/remove-item/$cartId/$vendor_id';
+        'https://api.1clickbuilder.com/api/cart/remove-item/$VendorId';
 
-    final response = await http.delete(
-      Uri.parse(url),
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/json',
-      },
-    );
-    print(" cart delete api called ");
+        print('${url}');
+
+  final body = jsonEncode({
+  "productId": [cartItemId],  // 👈 Always send as array
+});
 
 
-    print(" ${response.body}");
-        print(" ${response.statusCode}");
-
+    final response = await http
+        .delete(
+          Uri.parse(url),
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+          },
+          body: body, // 👈 IMPORTANT!
+        )
+        .timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 200) {
       cart.update((c) {
         if (c == null) return;
-        c.items.removeWhere((e) => e.cartItemId == cartId);
+        c.items.removeWhere((e) => e.cartItemId == cartItemId);
         _recalculateTotal(c);
       });
 
-
       Get.snackbar(
-      'Success',
-      'Item removed from cart',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(12),
-      borderRadius: 8,
-      icon: const Icon(Icons.check_circle, color: Colors.white),
-      duration: const Duration(seconds: 2),
-    );
+        'Success',
+        'Item removed from cart',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(12),
+        borderRadius: 8,
+        icon: const Icon(Icons.check_circle, color: Colors.white),
+        duration: const Duration(seconds: 2),
+      );
+    } else {
+      // ❌ API FAILED
+      Get.snackbar(
+        'Failed',
+        'Unable to remove item. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      debugPrint("❌ Delete failed: ${response.statusCode}");
+      debugPrint("❌ Body: ${response.body}");
     }
+  } on TimeoutException {
+    Get.snackbar(
+      'Timeout',
+      'Server taking too long. Try again.',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+    );
+  } catch (e) {
+    // ❌ NO INTERNET / CRASH
+    Get.snackbar(
+      'Error',
+      'Something went wrong. Check your internet connection.',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+
+    debugPrint("❌ Delete exception: $e");
+  } finally {
+    deletingItemId.value = ""; // 👈 STOP loader always
   }
+}
+
+
+// for delete items from cart when oder place sucessfuly
+
+
+
+
+Future<void> removeItem1({
+  required String cartItemId,
+  required String VendorId,
+}) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+
+  if (token == null || token.isEmpty) {
+    Get.snackbar(
+      'Session Expired',
+      'Please login again',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+    return;
+  }
+
+  try {
+    deletingItemId.value = cartItemId; // 👈 START loader
+
+    final url =
+        'https://api.1clickbuilder.com/api/cart/remove-item/$VendorId';
+
+        print('${url}');
+
+  final body = jsonEncode({
+  "productId": [cartItemId],  // 👈 Always send as array
+});
+
+
+    final response = await http
+        .delete(
+          Uri.parse(url),
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+          },
+          body: body, // 👈 IMPORTANT!
+        )
+        .timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      cart.update((c) {
+        if (c == null) return;
+        c.items.removeWhere((e) => e.cartItemId == cartItemId);
+        _recalculateTotal(c);
+      });
+
+   
+    } else {
+      // ❌ API FAILED
+   
+
+      debugPrint("❌ Delete failed: ${response.statusCode}");
+      debugPrint("❌ Body: ${response.body}");
+    }
+  } on TimeoutException {
+   
+    print('Server taking too long. Try again');
+  } catch (e) {
+    // ❌ NO INTERNET / CRASH
+  
+
+    debugPrint("❌ Delete exception: $e");
+  } finally {
+    deletingItemId.value = ""; // 👈 STOP loader always
+  }
+}
+
 
   /// ================= TOTAL =================
-  void _recalculateTotal(CartResponse c) {
-    c.totalPrice = c.items.fold(
-      0.0,
-      (sum, item) => sum + (item.sellingPrice * item.quantity),
-    );
-  }
+void _recalculateTotal(CartResponse c) {
+  c.totalPrice = c.items.fold(
+    0.0,
+    (sum, item) => sum + (item.sellingPrice * item.quantity),
+  );
+
+  final totalQty = c.items.fold(
+    0,
+    (sum, item) => sum + item.quantity,
+  );
+
+  cartCount.value = totalQty;
+}
+
 }

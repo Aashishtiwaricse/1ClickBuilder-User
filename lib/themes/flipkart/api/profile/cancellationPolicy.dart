@@ -26,6 +26,11 @@ class CancellationPolicyService {
       },
     );
 
+    print('${response.statusCode}');
+        print('${response.body}');
+
+    
+
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(response.body);
       final policyResponse =

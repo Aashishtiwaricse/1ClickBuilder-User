@@ -77,7 +77,7 @@ Future<void> fetchThemeAndNavigate() async {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => NexusMain(),
+                builder: (_) => FlipkartMain(),
               ),
             );
             break;
@@ -86,7 +86,7 @@ Future<void> fetchThemeAndNavigate() async {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => NexusMain(),
+                builder: (_) => FlipkartMain(),
               ),
             );
         }

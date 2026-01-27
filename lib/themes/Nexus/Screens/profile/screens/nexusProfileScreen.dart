@@ -249,11 +249,40 @@ Widget _logoutButton(BuildContext context) {
             borderRadius: BorderRadius.circular(14),
           ),
         ),
-        onPressed: () => _logout(context),
+        onPressed: () async {
+          // Show confirmation dialog
+          final shouldLogout = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false, // user must tap a button
+            builder: (ctx) => AlertDialog(
+              title: const Text("Confirm Logout"),
+              content: const Text("Are you sure you want to exit?"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text("Yes"),
+                ),
+              ],
+            ),
+          );
+
+          // If user confirmed, call your logout function
+          if (shouldLogout == true) {
+            _logout(context);
+          }
+        },
       ),
     ),
   );
 }
+
 
 
   /// SECTION TITLE

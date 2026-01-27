@@ -11,41 +11,36 @@ class CartService {
 
   /// 🔹 FETCH CART BY VENDOR ID
   static Future<CartResponse> fetchCart(String vendorId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  final guestId = prefs.getString('guestId'); // optional
 
-    if (token == null || token.isEmpty) {
-      await prefs.clear();
+  // 🔹 Build URL with nullable guestId
+  String apiUrl = '$_baseUrl/$vendorId?guestUserId=${guestId ?? ''}';
 
-      Get.snackbar(
-        'Session Expired',
-        'Please login again',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+  final url = Uri.parse(apiUrl);
 
-      throw Exception('SessionExpired');
-    }
+  print("🛒 Cart API URL: $apiUrl");
 
-    final url = Uri.parse('$_baseUrl/$vendorId');
+  // 🔥 token optional (guest allowed)
+  Map<String, String> headers = {
+    "Content-Type": "application/json",
+  };
 
-    print("🛒 Cart API called");
+  if (token != null && token.isNotEmpty) {
+    headers["Authorization"] = token;
+  }
 
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/json',
-      },
-    );
+  print("🛒 Cart API called");
+  final response = await http.get(url, headers: headers);
 
-    print("📦 Cart Response: ${response.body}");
-    print("📦 Status Code: ${response.statusCode}");
+  print("📦 Cart Response: ${response.body}");
+  print("📦 Status Code: ${response.statusCode}");
 
+  // If user is logged-in, then validate token
+  if (token != null) {
     final body = json.decode(response.body);
 
-    /// 🔴 TOKEN EXPIRED / INVALID
     if (body['error'] != null &&
         body['error']['error'] == 'FailedToAuthenticate') {
       await prefs.clear();
@@ -57,51 +52,45 @@ class CartService {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-
       throw Exception('SessionExpired');
     }
-
-    if (response.statusCode != 200) {
-      throw Exception(body['message'] ?? 'Cart API failed');
-    }
-
-    double total = 0;
-    int quantity = 0;
-    List<CartItem> items = [];
-
-    final data = body['data'];
-
-    /// ✅ CASE 1: data is LIST
-    if (data is List) {
-      items = data.map<CartItem>((e) {
-        final item = CartItem.fromJson(e);
-        total += item.sellingPrice * item.quantity;
-        quantity += item.quantity;
-        return item;
-      }).toList();
-    }
-
-    /// ✅ CASE 2: data is MAP
-    else if (data is Map) {
-      final List listItems = data['items'] ?? [];
-
-      items = listItems.map<CartItem>((e) {
-        final item = CartItem.fromJson(e);
-        total += item.sellingPrice * item.quantity;
-        quantity += item.quantity;
-        return item;
-      }).toList();
-    }
-
-    return CartResponse(
-      totalPrice: total,
-      totalQuantity: quantity,
-      items: items,
-    );
   }
+
+  // ---- existing parsing logic continues ----
+  final body = json.decode(response.body);
+
+  double total = 0;
+  int quantity = 0;
+  List<CartItem> items = [];
+
+  final data = body['data'];
+
+  if (data is List) {
+    items = data.map<CartItem>((e) {
+      final item = CartItem.fromJson(e);
+      total += item.sellingPrice * item.quantity;
+      quantity += item.quantity;
+      return item;
+    }).toList();
+  } else if (data is Map) {
+    final List listItems = data['items'] ?? [];
+    items = listItems.map<CartItem>((e) {
+      final item = CartItem.fromJson(e);
+      total += item.sellingPrice * item.quantity;
+      quantity += item.quantity;
+      return item;
+    }).toList();
+  }
+
+  return CartResponse(
+    totalPrice: total,
+    totalQuantity: quantity,
+    items: items,
+  );
+}
 }
 
-/// 🔹 RESPONSE HOLDER
+
 class CartResponse {
   double totalPrice;
   final int totalQuantity;
@@ -112,9 +101,23 @@ class CartResponse {
     required this.totalQuantity,
     required this.items,
   });
-}
 
-/// 🔹 CART ITEM MODEL
+  factory CartResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] ?? {};
+    final cart = data['cart'] ?? {};
+    final itemsJson = data['items'] ?? [];
+
+    return CartResponse(
+      totalPrice:
+          double.tryParse(cart['totalPrice']?.toString() ?? '0') ?? 0.0,
+      totalQuantity:
+          int.tryParse(cart['totalQuantity']?.toString() ?? '0') ?? 0,
+      items: List<CartItem>.from(
+        itemsJson.map((x) => CartItem.fromJson(x)),
+      ),
+    );
+  }
+}
 class CartItem {
   final String cartItemId;
   final String productId;
@@ -127,6 +130,21 @@ class CartItem {
   final String image;
   final String productName;
 
+  // ✅ EXTRA API FIELDS (added)
+  final String cartId;
+  final String userId;
+  final String createdAt;
+  final String updatedAt;
+  final int isImported;
+  final String taxesAndCharges;
+  final String? taxOptions;
+  final int packagingCharges;
+  final String shippingPrice;
+  final String internationalShippingPrice;
+  final String currency;
+  final String productImageId;
+  final String sizes;
+
   CartItem({
     required this.cartItemId,
     required this.productId,
@@ -138,6 +156,21 @@ class CartItem {
     this.selectedSize,
     required this.image,
     required this.productName,
+
+    // extra
+    required this.cartId,
+    required this.userId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.isImported,
+    required this.taxesAndCharges,
+    this.taxOptions,
+    required this.packagingCharges,
+    required this.shippingPrice,
+    required this.internationalShippingPrice,
+    required this.currency,
+    required this.productImageId,
+    required this.sizes,
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
@@ -152,11 +185,29 @@ class CartItem {
       discountingPrice:
           double.tryParse(json['discountingPrice']?.toString() ?? '0') ?? 0.0,
       selectedColor: json['selectedColor'],
-      selectedSize: json['selectedSize'],
+      selectedSize: json['selectedSize']?.toString(),
       image: (json['image'] is String && json['image'].toString().isNotEmpty)
           ? json['image']
           : '',
       productName: json['productName']?.toString() ?? '',
+
+      // ✅ extra mappings
+      cartId: json['cartId']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      createdAt: json['createdAt']?.toString() ?? '',
+      updatedAt: json['updatedAt']?.toString() ?? '',
+      isImported:
+          int.tryParse(json['is_imported']?.toString() ?? '0') ?? 0,
+      taxesAndCharges: json['taxesAndCharges']?.toString() ?? '0',
+      taxOptions: json['taxOptions'],
+      packagingCharges:
+          int.tryParse(json['packagingCharges']?.toString() ?? '0') ?? 0,
+      shippingPrice: json['shippingPrice']?.toString() ?? '0',
+      internationalShippingPrice:
+          json['internationalshippingPrice']?.toString() ?? '0',
+      currency: json['currency']?.toString() ?? '',
+      productImageId: json['productImageId']?.toString() ?? '',
+      sizes: json['sizes']?.toString() ?? '',
     );
   }
 }

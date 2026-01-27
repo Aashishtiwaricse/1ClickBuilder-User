@@ -34,7 +34,7 @@ class NexusAppConstant {
   static const String privacy_Url =
       '/api/page-service/privacy/';
   static const String cancellation_Url =
-      '/api/page-service/cancellation/';
+      '/api/page-service/cancellation';
   //WISHLIST URLS
 
   static const String wishlistUrl = '/api/wishlist/add-product-to-wishlist';

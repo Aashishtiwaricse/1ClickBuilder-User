@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:one_click_builder/themes/Nexus/Modules/BestSellers/bestSellers.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/NexusProductById/productById.dart';
+
+
+
 class ProductCard extends StatelessWidget {
   final Product product;
   final String imageUrl;
@@ -13,6 +16,17 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String firstSizePrice = product.images.isNotEmpty &&
+            product.images.first.sizes.isNotEmpty
+        ? product.images.first.sizes.first.price
+        : product.salePrice.toString();
+
+    // Convert string → double
+    final double sellingPrice = double.tryParse(firstSizePrice) ?? 0;
+
+    // Original price (double)
+    final double originalPrice = product.price ?? 0;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -36,14 +50,12 @@ class ProductCard extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(10),
 
-        // ✅ IMPORTANT
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // 🖼 IMAGE — FLEXIBLE
+            // 🖼 IMAGE
             Expanded(
-              flex: 6,
+              flex: 3,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: imageUrl.isEmpty
@@ -87,36 +99,66 @@ class ProductCard extends StatelessWidget {
 
             const SizedBox(height: 4),
 
-            // 💰 PRICE
+            // 💰 PRICE + DISCOUNT %
             Row(
               children: [
+                // SELLING PRICE
                 Text(
-                  "₹${product.salePrice}",
+                  "₹${firstSizePrice}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
-                    fontSize: 15,
+                    fontSize: 12,
                   ),
                 ),
+
                 const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    "₹${product.price}",
-                    overflow: TextOverflow.ellipsis,
+
+                // ORIGINAL PRICE (Strike-through)
+                if (originalPrice > sellingPrice)
+                  Text(
+                    "₹${originalPrice.toStringAsFixed(0)}",
                     style: const TextStyle(
                       decoration: TextDecoration.lineThrough,
                       color: Colors.grey,
-                      fontSize: 12,
+                      fontSize: 10,
                     ),
                   ),
-                ),
+
+                const SizedBox(width:4),
+
+                // 🔥 DISCOUNT PERCENTAGE — only when discount is real
+                if (originalPrice > sellingPrice)
+                  (() {
+                    final double percent =
+                        ((originalPrice - sellingPrice) / originalPrice) * 100;
+
+                    return Row(
+                      children: [
+                        const Icon(
+                          Icons.arrow_downward,
+                          color: Colors.green,
+                          size: 12,
+                        ),
+                        Text(
+                          "${percent.toStringAsFixed(0)}% OFF",
+                          style: const TextStyle(
+                            fontSize: 8,
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  })(),
               ],
             ),
 
-   const SizedBox(height: 5),
-            // 🛒 BUTTON (STABLE)
+            const SizedBox(height: 5),
+
+            // 🛒 BUY NOW
             SizedBox(
-              height: 38,
+              height: 24,
               width: double.infinity,
               child: Container(
                 alignment: Alignment.center,
@@ -126,7 +168,7 @@ class ProductCard extends StatelessWidget {
                 ),
                 child: const Text(
                   "BUY NOW",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ),
             ),

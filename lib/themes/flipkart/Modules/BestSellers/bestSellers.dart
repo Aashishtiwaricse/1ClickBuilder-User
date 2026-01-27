@@ -48,8 +48,9 @@ class Meta {
 class BestSellerData {
   final Product? product;
   final List<ShippingDetails> shippingDetails;
-  final List<WholesalerAddress> wholesalerAddress;
-  final List<ResalerAddress> resalerAddress;
+  final WholesalerAddress? wholesalerAddress;
+final ResalerAddress? resalerAddress;
+
 
   BestSellerData({
     this.product,
@@ -66,14 +67,14 @@ class BestSellerData {
               ?.map((e) => ShippingDetails.fromJson(e))
               .toList() ??
           [],
-      wholesalerAddress: (json['wholesalerAddress'] as List?)
-              ?.map((e) => WholesalerAddress.fromJson(e))
-              .toList() ??
-          [],
-      resalerAddress: (json['resalerAddress'] as List?)
-              ?.map((e) => ResalerAddress.fromJson(e))
-              .toList() ??
-          [],
+      wholesalerAddress: json['wholesalerAddress'] != null
+    ? WholesalerAddress.fromJson(json['wholesalerAddress'])
+    : null,
+
+      resalerAddress: json['resalerAddress'] != null
+    ? ResalerAddress.fromJson(json['resalerAddress'])
+    : null,
+
     );
   }
 }

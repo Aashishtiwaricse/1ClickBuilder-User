@@ -8,40 +8,55 @@ import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/allCategories.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/allSubCategory/allSubCategory.dart';
 import 'package:one_click_builder/themes/Nexus/api/Categoryalist/categoryList.dart';
+import 'package:shimmer/shimmer.dart' show Shimmer;
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/api/Categoryalist/categoryList.dart';
-import 'package:shimmer/shimmer.dart';
-
-class FlipkartCategoryScreen extends StatefulWidget {
-  const FlipkartCategoryScreen({super.key});
+class NexusCategoryScreen extends StatefulWidget {
+  const NexusCategoryScreen({super.key});
 
   @override
-  State<FlipkartCategoryScreen> createState() => _FlipkartCategoryScreenState();
+  State<NexusCategoryScreen> createState() => _NexusCategoryScreenState();
 }
 
-class _FlipkartCategoryScreenState extends State<FlipkartCategoryScreen>
-    with TickerProviderStateMixin {
+class _NexusCategoryScreenState extends State<NexusCategoryScreen> {
   final NexusCategoryApiService apiService = NexusCategoryApiService();
-  final vendorController = Get.find<NexusVendorController>();
+  NexusCategoryResponse? categoryResponse;
 
   bool loading = true;
-  List categories = [];
 
-  TabController? _tabController;
+  final int visibleCount = 6;
+  List categories = [];
+  List visibleItems = [];
+
+  int currentIndex = 0;
+  Timer? _timer;
   late Worker _vendorWorker;
+  final vendorController = Get.find<NexusVendorController>();
+
+  String trimTo8Words(String text) {
+    final words = text.trim().split(RegExp(r"\s+"));
+
+    // Always take only up to first 8 words
+    final trimmed = words.take(5).join(" ");
+
+    // Add "..." only if original text is longer than 8 words
+    if (words.length > 8) {
+      return "$trimmed...";
+    }
+
+    return trimmed; // always return trimmed version
+  }
 
   @override
   void initState() {
     super.initState();
 
+    // ✅ Call immediately if vendor already exists
     final vendorId = vendorController.vendorId.value;
     if (vendorId.isNotEmpty) {
       loadCategories(vendorId);
     }
 
+    // ✅ Listen for future changes
     _vendorWorker = ever<String>(
       vendorController.vendorId,
       (vendorId) {
@@ -53,49 +68,74 @@ class _FlipkartCategoryScreenState extends State<FlipkartCategoryScreen>
   }
 
   Future<void> loadCategories(String vendorId) async {
-    setState(() => loading = true);
+    loading = true;
+    setState(() {});
 
     try {
       final response = await apiService.fetchCategories(vendorId);
+
       if (!mounted) return;
 
       categories = response?.data?.categories ?? [];
+      visibleItems.clear();
 
-      _tabController?.dispose();
-      _tabController = TabController(length: categories.length, vsync: this);
+      if (categories.isNotEmpty) {
+        visibleItems = categories.take(visibleCount).toList();
+        currentIndex = visibleItems.length % categories.length;
+        startAutoSlide();
+      } else {
+        visibleItems = List.from(categories);
+      }
 
-      setState(() => loading = false);
+      loading = false;
+      setState(() {});
     } catch (e) {
+      loading = false;
+      setState(() {});
       debugPrint("Category API error: $e");
-      setState(() => loading = false);
     }
   }
 
   @override
   void dispose() {
-    _tabController?.dispose();
     _vendorWorker.dispose();
+    _timer?.cancel();
     super.dispose();
+  }
+
+  void startAutoSlide() {
+    _timer?.cancel();
+
+    if (categories.length < 2) return; // only stop if impossible to slide
+
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || visibleItems.isEmpty) return;
+
+      setState(() {
+        visibleItems.removeAt(0);
+        visibleItems.add(categories[currentIndex]);
+        currentIndex = (currentIndex + 1) % categories.length;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return  SizedBox(
-        height: 120,
-        child: Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),),
+      return Center(
+        child: Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Container(
+            width: 120,
+            height: 20,
+            color: Colors.white,
+          ),
+        ),
       );
     }
 
-    if (categories.isEmpty) {
+    if (visibleItems.isEmpty) {
       return const SizedBox(
         height: 120,
         child: Center(child: Text("No categories")),
@@ -105,66 +145,124 @@ class _FlipkartCategoryScreenState extends State<FlipkartCategoryScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        /// 🔥 CATEGORY TAB BAR
-        SizedBox(
-          height: 110,
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            indicatorColor: Theme.of(context).colorScheme.primary,
-            indicatorWeight: 3,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-            tabs: List.generate(categories.length, (index) {
-              final item = categories[index];
-
-              return Tab(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          item.imageUrl ?? "",
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.category),
-                        ),
-                      ),
+        /// 🔥 HEADER (THEME DRIVEN)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "All Categories",
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AllCategoriesScreen(),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      item.name ?? "",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12),
-                    )
-                  ],
+                  );
+                },
+                child: Text(
+                  "See all",
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
-              );
-            }),
+              ),
+            ],
           ),
         ),
 
-        /// 🔥 TAB VIEW (CATEGORY DATA)
+        /// 🔥 AUTO SLIDING CATEGORY ROW
         SizedBox(
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: TabBarView(
-            controller: _tabController,
-            children: List.generate(categories.length, (index) {
-              final category = categories[index];
+          height: 120,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 900),
+            transitionBuilder: (child, animation) {
+              final slide = Tween<Offset>(
+                begin: const Offset(1, 0),
+                end: Offset.zero,
+              ).animate(animation);
 
-              return AllSubCategory(
-                subcategoryId: vendorController.vendorId.value,
-                subcategoryName: category.name.toString(),
+              return SlideTransition(
+                position: slide,
+                child: child,
               );
-            }),
+            },
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: Row(
+                key: ValueKey(visibleItems.map((e) => e.name).join("_")),
+                children: visibleItems.map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _categoryCard(item),
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _categoryCard(dynamic item) {
+    return GestureDetector(
+      onTap: () {
+        final vendorController = Get.find<NexusVendorController>();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AllSubCategory(
+              subcategoryId: vendorController.vendorId.value,
+              subcategoryName: item.name.toString(),
+            ),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          // FIXED SIZE IMAGE BOX (NO BACKGROUND)
+          Container(
+            height: 45,
+            width: 45,
+            decoration: BoxDecoration(
+           //   color: Colors.black,
+              borderRadius: BorderRadius.circular(8),
+              image: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(item.imageUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: (item.imageUrl == null || item.imageUrl!.isEmpty)
+                ? const Icon(Icons.category, size: 28)
+                : null,
+          ),
+          SizedBox(height: 4),
+          SizedBox(
+            width: 60, // reduced width to stop overflow
+            child: Text(
+              trimTo8Words(item.name ?? ""),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

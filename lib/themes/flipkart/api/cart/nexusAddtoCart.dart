@@ -57,6 +57,8 @@ class CartApiService {
       }
 
       if (body['error']?['message']?.toString().contains('already') == true) {
+
+        
         return CartAddResult.alreadyExists;
       }
 

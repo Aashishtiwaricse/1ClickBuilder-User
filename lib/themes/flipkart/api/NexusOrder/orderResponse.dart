@@ -3,18 +3,18 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:one_click_builder/themes/Nexus/Modules/orders/NexusOrders.dart';
 import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
 class OrderApi {
-  static const String baseUrl =
-      "https://api.1clickbuilder.com/api/order";
+  static String baseUrl = "${NexusAppConstant.baseUrl}/api/order";
 
   static Future<OrderApiResponse> fetchOrders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
+
+      print(".     details.     ${token}");
 
       if (token == null || token.isEmpty) {
         throw Exception("Auth token not found");
@@ -27,6 +27,8 @@ class OrderApi {
         throw Exception("Vendor ID not found");
       }
 
+      print(".     details.     ${baseUrl}/${vendorId}");
+
       final response = await http.get(
         Uri.parse("$baseUrl/$vendorId"),
         headers: {
@@ -36,7 +38,7 @@ class OrderApi {
       );
 
       print("📡 STATUS: ${response.statusCode}");
-      print("📦 BODY: ${response.body}");
+      print("📦 BODY.   recent orders : ${response.body}");
 
       if (response.statusCode == 200) {
         return OrderApiResponse.fromJson(

@@ -13,6 +13,8 @@ class ProductApiService {
     final url =
         "$nexudsbaseUrl/product/product-list/$categoryId";
 
+        print("from Subcategory ${url}");
+
     try {
       print("📌 Fetching products from: $url  PARAMS: search=$search");
 

@@ -6,50 +6,66 @@ import 'package:one_click_builder/themes/Nexus/Screens/Home/BestSellerScreen/nex
 import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/CategoryList.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/NexusProduct/nexusNewArrival.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/banners.dart';
-import 'package:one_click_builder/themes/flipkart/Screens/Home/Category/CategoryList.dart';
+import 'package:one_click_builder/themes/Nexus/api/BestSeller/NexusBestSeller.dart';
+import 'package:one_click_builder/themes/Nexus/api/Categoryalist/categoryList.dart';
+import 'package:one_click_builder/themes/Nexus/api/NexusProduct/nexusProduct.dart';
+import 'package:one_click_builder/themes/Nexus/api/banners/bannersApi.dart';
 
-class FlipkartHome extends StatefulWidget {
-  const FlipkartHome({super.key});
 
-  @override
-  State<FlipkartHome> createState() => _FlipkartHomeState();
-}
-
-class _FlipkartHomeState extends State<FlipkartHome> {
+class NexusHome extends StatefulWidget {
+  const NexusHome({super.key});
 
   @override
-void initState() {
-  super.initState();
-  Get.put(NexusVendorController(), permanent: true);
+  State<NexusHome> createState() => _NexusHomeState();
 }
+
+class _NexusHomeState extends State<NexusHome> {
+  final bannerApi = NexusBannerApiService();
+  final categoryApi = NexusCategoryApiService();
+  final newApi = ProductService();
+  final bestApi = BestSellerService();
+  @override
+  void initState() {
+    super.initState();
+    Get.put(NexusVendorController(), permanent: true);
+  }
+
+ Future<void> _refreshHome() async {
+    final vendorId = Get.find<NexusVendorController>().vendorId.value;
+
+    print("🔄 Pull-to-Refresh: Fetching all Home APIs again…");
+
+    await bannerApi.getBannerList(vendorId);
+
+    await categoryApi.fetchCategories(vendorId);
+    await newApi.getProducts(vendorId);
+    await bestApi.getBestSellerProducts(vendorId);
+
+    // UI will refresh itself since data updates inside widgets
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    return    Scaffold(
-
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            BannerScreen(),
-            SizedBox(
-              height: 40,
-            ),
-            FlipkartCategoryScreen(),
-            SizedBox(
-              height: 40,
-            ),
-            NewArrivalSection(),
-            SizedBox(
-              height: 40,
-            ),
-            BestSellerScreen(),
-            SizedBox(
-              height: 40,
-            ),
-            SizedBox(
-              height: 40,
-            ),
-          ],
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: _refreshHome,
+        color: Colors.blue, // optional
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              BannerScreen(),
+              const SizedBox(height:20),
+              NexusCategoryScreen(),
+             // const SizedBox(height:20),
+              NewArrivalSection(),
+              const SizedBox(height:20),
+              BestSellerScreen(),
+                        const SizedBox(height: 10)
+            //  const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

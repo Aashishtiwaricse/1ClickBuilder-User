@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/api/Sigin/guestsigin.dart';
-import 'package:one_click_builder/themes/Nexus/api/cart/nexusAddtoCart.dart';
 import 'package:one_click_builder/themes/Nexus/api/cart/nexusCart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -106,8 +104,8 @@ cartCount.value = response.totalQuantity;
 
 
 Future<void> removeItem({
-  required String cartId,
-  required String vendor_id,
+  required String cartItemId,
+  required String VendorId,
 }) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
@@ -124,10 +122,17 @@ Future<void> removeItem({
   }
 
   try {
-    deletingItemId.value = cartId; // 👈 START loader
+    deletingItemId.value = cartItemId; // 👈 START loader
 
     final url =
-        'https://api.1clickbuilder.com/api/cart/remove-item/$cartId/$vendor_id';
+        'https://api.1clickbuilder.com/api/cart/remove-item/$VendorId';
+
+        print('${url}');
+
+  final body = jsonEncode({
+  "productId": [cartItemId],  // 👈 Always send as array
+});
+
 
     final response = await http
         .delete(
@@ -136,13 +141,14 @@ Future<void> removeItem({
             'Authorization': token,
             'Content-Type': 'application/json',
           },
+          body: body, // 👈 IMPORTANT!
         )
         .timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 200) {
       cart.update((c) {
         if (c == null) return;
-        c.items.removeWhere((e) => e.cartItemId == cartId);
+        c.items.removeWhere((e) => e.cartItemId == cartItemId);
         _recalculateTotal(c);
       });
 
@@ -165,9 +171,6 @@ Future<void> removeItem({
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        margin: const EdgeInsets.all(12),
-        borderRadius: 8,
-        icon: const Icon(Icons.error, color: Colors.white),
       );
 
       debugPrint("❌ Delete failed: ${response.statusCode}");
@@ -197,10 +200,15 @@ Future<void> removeItem({
   }
 }
 
+
 // for delete items from cart when oder place sucessfuly
+
+
+
+
 Future<void> removeItem1({
-  required String cartId,
-  required String vendor_id,
+  required String cartItemId,
+  required String VendorId,
 }) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
@@ -217,10 +225,17 @@ Future<void> removeItem1({
   }
 
   try {
-    deletingItemId.value = cartId; // 👈 START loader
+    deletingItemId.value = cartItemId; // 👈 START loader
 
     final url =
-        'https://api.1clickbuilder.com/api/cart/remove-item/$cartId/$vendor_id';
+        'https://api.1clickbuilder.com/api/cart/remove-item/$VendorId';
+
+        print('${url}');
+
+  final body = jsonEncode({
+  "productId": [cartItemId],  // 👈 Always send as array
+});
+
 
     final response = await http
         .delete(
@@ -229,32 +244,31 @@ Future<void> removeItem1({
             'Authorization': token,
             'Content-Type': 'application/json',
           },
+          body: body, // 👈 IMPORTANT!
         )
         .timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 200) {
       cart.update((c) {
         if (c == null) return;
-        c.items.removeWhere((e) => e.cartItemId == cartId);
+        c.items.removeWhere((e) => e.cartItemId == cartItemId);
         _recalculateTotal(c);
       });
 
-     print('item deleted from  cart');
+   
     } else {
       // ❌ API FAILED
-           print('item failed to delete from  cart');
-
+   
 
       debugPrint("❌ Delete failed: ${response.statusCode}");
       debugPrint("❌ Body: ${response.body}");
     }
   } on TimeoutException {
-               print('item failed to delete from  cart.  time out');
-
-    
+   
+    print('Server taking too long. Try again');
   } catch (e) {
     // ❌ NO INTERNET / CRASH
-    
+  
 
     debugPrint("❌ Delete exception: $e");
   } finally {

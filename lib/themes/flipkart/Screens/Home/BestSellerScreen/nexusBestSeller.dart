@@ -65,7 +65,7 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,6 +94,21 @@ void initState() {
   ),),
           )
         else
+  (bestSellerResponse?.data.isEmpty ?? true)
+      ? const Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Center(
+            child: Text(
+              "No Data Found",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        )
+      : 
           GridView.builder(
             shrinkWrap: true, // 🔑 REQUIRED inside Column / ScrollView
             physics: const NeverScrollableScrollPhysics(), // 🔑
@@ -103,7 +118,7 @@ void initState() {
               crossAxisCount: 2, // ✅ TWO cards per row
               crossAxisSpacing: 11,
               mainAxisSpacing: 12,
-            childAspectRatio: width < 360 ? 0.39 : 0.43,
+            childAspectRatio: height < 360 ? 0.39 : 0.63,
 
             ),
             itemBuilder: (context, index) {

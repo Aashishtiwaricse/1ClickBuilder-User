@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/ContactUsScreen.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/OrdersReturnsScreen.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/aboutScreen.dart';
@@ -29,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// CHECK LOGIN STATUS
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id');
+    final userId = prefs.getString('token');
 
     setState(() {
       isLoggedIn = userId != null && userId.isNotEmpty;
@@ -38,16 +40,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// LOGOUT
-  Future<void> _logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+Future<void> _logout(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => NexusSignInScreen()),
-      (route) => false,
-    );
-  }
+  // Clear local storage
+  await prefs.clear();
+
+  // Delete all active GetX controllers
+  //Get.deleteAll(force: true);
+
+  // Optional: Reset entire GetX state (recommended)
+  // Get.reset();
+
+  // Navigate to Sign In screen
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (_) => NexusSignInScreen()),
+    (route) => false,
+  );
+}
+
 
   /// LOGIN REQUIRED DIALOG
   void _showLoginRequiredDialog(BuildContext context) {
@@ -126,7 +138,7 @@ Widget build(BuildContext context) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const OrderTrackingScreen(),
+                        builder: (_) =>  OrdersReturnScreen(),
                       ),
                     );
                   }),
@@ -194,7 +206,7 @@ Widget _loginBanner(BuildContext context) {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            height: 46,
+            height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4D6D),
@@ -237,11 +249,40 @@ Widget _logoutButton(BuildContext context) {
             borderRadius: BorderRadius.circular(14),
           ),
         ),
-        onPressed: () => _logout(context),
+        onPressed: () async {
+          // Show confirmation dialog
+          final shouldLogout = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false, // user must tap a button
+            builder: (ctx) => AlertDialog(
+              title: const Text("Confirm Logout"),
+              content: const Text("Are you sure you want to exit?"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text("Yes"),
+                ),
+              ],
+            ),
+          );
+
+          // If user confirmed, call your logout function
+          if (shouldLogout == true) {
+            _logout(context);
+          }
+        },
       ),
     ),
   );
 }
+
 
 
   /// SECTION TITLE

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:one_click_builder/themes/Nexus/Main/main.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/RegisterAccount/regiisterAccount.dart';
+import 'package:one_click_builder/themes/Nexus/Screens/ResetPassword/forgotPassword.dart';
 import 'package:one_click_builder/themes/Nexus/api/Sigin/sigin.dart';
 
 class NexusSignInScreen extends StatefulWidget {
@@ -211,6 +212,25 @@ input = "$selectedCode$input"; // correct
                   ),
 
                   const SizedBox(height: 20),
+                   Row(
+                  children: [
+                    Checkbox(value: false, onChanged: (v) {}),
+                    const Text("Remember me"),
+                  ],
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Navigate to Reset Password Screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ForgotPasswordScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "Forgot password?",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
 
                   // ---------------- Login Button ----------------
                   SizedBox(

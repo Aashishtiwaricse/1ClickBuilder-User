@@ -49,7 +49,8 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
 
   final PageController _pageController = PageController(viewportFraction: 1);
   int _currentCarouselIndex = 0;
-final GuestCartController guestCartController = Get.find<GuestCartController>();
+  final GuestCartController guestCartController =
+      Get.find<GuestCartController>();
 
   bool isWishlisted = false;
   late AnimationController _addToCartController;
@@ -77,9 +78,6 @@ final GuestCartController guestCartController = Get.find<GuestCartController>();
 
   bool isLoggedIn = false;
   bool isCheckingLogin = true;
-
-
-
 
   final ImagePicker _picker = ImagePicker();
 
@@ -232,55 +230,54 @@ final GuestCartController guestCartController = Get.find<GuestCartController>();
         .toList();
 
     return Scaffold(
-    appBar: AppBar(
-  title: Text(product!.title ?? "Product"),
-  actions: [
-    Obx(() {
-      final prefs = Get.find<SharedPreferences>();
-      final token = prefs.getString("token");
+      appBar: AppBar(
+        title: Text(product!.title ?? "Product"),
+        actions: [
+          Obx(() {
+            final prefs = Get.find<SharedPreferences>();
+            final token = prefs.getString("token");
 
-      // If token present → logged-in
-      final count = token != null
-          ? cartController.cartCount.value
-          : guestCartController.guestCartCount.value;
+            // If token present → logged-in
+            final count = token != null
+                ? cartController.cartCount.value
+                : guestCartController.guestCartCount.value;
 
-      return Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: GestureDetector(
-          onTap: () => Get.to(() => const CartScreen()),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.shopping_cart_outlined,
-                  color: Colors.black, size: 26),
-              if (count > 0)
-                Positioned(
-                  right: -6,
-                  top: -6,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      count.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => Get.to(() => const CartScreen()),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined,
+                        color: Colors.black, size: 26),
+                    if (count > 0)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-            ],
-          ),
-        ),
-      );
-    }),
-  ],
-),
-
+              ),
+            );
+          }),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // CAROUSEL (single image per color in current API)
@@ -686,17 +683,6 @@ final GuestCartController guestCartController = Get.find<GuestCartController>();
 
   // ---------- HELPERS & SMALL ANIMATIONS ----------
 
-  void _toggleWishlist() {
-    setState(() {
-      isWishlisted = !isWishlisted;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(
-              isWishlisted ? "Added to wishlist" : "Removed from wishlist")),
-    );
-  }
-
   void _simulateAddToCart() {
     _addToCartController.forward().then((_) => _addToCartController.reverse());
     ScaffoldMessenger.of(context).showSnackBar(
@@ -704,101 +690,99 @@ final GuestCartController guestCartController = Get.find<GuestCartController>();
     );
   }
 
-
   Future<bool> _checkLoginStatus() async {
-  final prefs = await SharedPreferences.getInstance();
-  final userId = prefs.getString('token');
-  return userId != null && userId.isNotEmpty;
-}
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('token');
+    return userId != null && userId.isNotEmpty;
+  }
+
   Future<bool> _onAddToCartPressed({required bool isBuyNow}) async {
-  // Check login
-  final loggedIn = await _checkLoginStatus();
+    // Check login
+    final loggedIn = await _checkLoginStatus();
 
-  if (!loggedIn) {
-    if (isBuyNow) {
-      _showLoginRequiredDialog(context);
-      return false;
-    } else {
-      return await _guestAddToCart();
-    }
-  }
-
-  // Normal add to cart flow
-  if (product == null ||
-      product!.images == null ||
-      product!.images!.isEmpty) {
-    _showSnack("Invalid product");
-    return false;
-  }
-
-  setState(() {
-    if (isBuyNow) {
-      isBuyNowLoading = true;
-    } else {
-      isAddToCartLoading = true;
-    }
-  });
-
-  try {
-    final selectedImage = product!.images!.isNotEmpty &&
-            selectedColorIndex < product!.images!.length
-        ? product!.images![selectedColorIndex]
-        : product!.images!.first;
-
-    final selectedColor =
-        (selectedImage.colors != null && selectedImage.colors!.isNotEmpty)
-            ? selectedImage.colors!.first
-            : "";
-
-    final selectedSizeData =
-        selectedSizeIndex < selectedImage.sizes!.length
-            ? selectedImage.sizes![selectedSizeIndex]
-            : null;
-
-    final result = await cartApi.CartApiService.addToCart(
-      vendorId: product!.vendorId ?? "",
-      productId: product!.id ?? "",
-      image: selectedImage.image ?? "",
-      isImported: (product!.isImported ?? 0) == 1,
-      price: selectedSizeData?.price?.toInt() ?? 0,
-      quantity: 1,
-      selectedColor: selectedColor,
-      selectedSize: selectedSizeData?.size ?? "Free",
-    );
-
-    switch (result) {
-      case cartApi.CartAddResult.success:
-        cartController.cartCount.value += 1;
-        _showSnack("Item added to cart", backgroundColor: Colors.green);
-        return true;
-
-      case cartApi.CartAddResult.alreadyExists:
-        _showSnack("Item already in your cart",
-            backgroundColor: Colors.orange);
-        return true;
-
-      case cartApi.CartAddResult.notLoggedIn:
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('token');
-        _showSnack("Session Expired", backgroundColor: Colors.blue);
+    if (!loggedIn) {
+      if (isBuyNow) {
         _showLoginRequiredDialog(context);
         return false;
-
-      case cartApi.CartAddResult.error:
-        _showSnack("Failed to add item", backgroundColor: Colors.red);
-        return false;
+      } else {
+        return await _guestAddToCart();
+      }
     }
-  } catch (e) {
-    _showSnack("Something went wrong");
-    return false;
-  } finally {
-    setState(() {
-      isAddToCartLoading = false;
-      isBuyNowLoading = false;
-    });
-  }
-}
 
+    // Normal add to cart flow
+    if (product == null ||
+        product!.images == null ||
+        product!.images!.isEmpty) {
+      _showSnack("Invalid product");
+      return false;
+    }
+
+    setState(() {
+      if (isBuyNow) {
+        isBuyNowLoading = true;
+      } else {
+        isAddToCartLoading = true;
+      }
+    });
+
+    try {
+      final selectedImage = product!.images!.isNotEmpty &&
+              selectedColorIndex < product!.images!.length
+          ? product!.images![selectedColorIndex]
+          : product!.images!.first;
+
+      final selectedColor =
+          (selectedImage.colors != null && selectedImage.colors!.isNotEmpty)
+              ? selectedImage.colors!.first
+              : "";
+
+      final selectedSizeData = selectedSizeIndex < selectedImage.sizes!.length
+          ? selectedImage.sizes![selectedSizeIndex]
+          : null;
+
+      final result = await cartApi.CartApiService.addToCart(
+        vendorId: product!.vendorId ?? "",
+        productId: product!.id ?? "",
+        image: selectedImage.image ?? "",
+        isImported: (product!.isImported ?? 0) == 1,
+        price: selectedSizeData?.price?.toInt() ?? 0,
+        quantity: 1,
+        selectedColor: selectedColor,
+        selectedSize: selectedSizeData?.size ?? "Free",
+      );
+
+      switch (result) {
+        case cartApi.CartAddResult.success:
+          cartController.cartCount.value += 1;
+          _showSnack("Item added to cart", backgroundColor: Colors.green);
+          return true;
+
+        case cartApi.CartAddResult.alreadyExists:
+          _showSnack("Item already in your cart",
+              backgroundColor: Colors.orange);
+          return true;
+
+        case cartApi.CartAddResult.notLoggedIn:
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('token');
+          _showSnack("Session Expired", backgroundColor: Colors.blue);
+          _showLoginRequiredDialog(context);
+          return false;
+
+        case cartApi.CartAddResult.error:
+          _showSnack("Failed to add item", backgroundColor: Colors.red);
+          return false;
+      }
+    } catch (e) {
+      _showSnack("Something went wrong");
+      return false;
+    } finally {
+      setState(() {
+        isAddToCartLoading = false;
+        isBuyNowLoading = false;
+      });
+    }
+  }
 
   // Future<bool> _onAddToCartPressed({required bool isBuyNow}) async {
   //   // 🔐 CHECK LOGIN FIRST
@@ -875,7 +859,6 @@ final GuestCartController guestCartController = Get.find<GuestCartController>();
   //    _showLoginRequiredDialog(context);
 
   //       return false;
-
 
   //       case cartApi.CartAddResult.error:
   //         _showSnack("Failed to add item", backgroundColor: Colors.red);
@@ -1010,85 +993,81 @@ final GuestCartController guestCartController = Get.find<GuestCartController>();
     return Color(int.parse("0x$hex"));
   }
 
-Future<bool> _guestAddToCart() async {
-  try {
-    setState(() => isLoading = true); // 🔵 SHOW LOADER
+  Future<bool> _guestAddToCart() async {
+    try {
+      setState(() => isLoading = true); // 🔵 SHOW LOADER
 
-    final prefs = await SharedPreferences.getInstance();
-    final guestId = prefs.getString("guestId") ?? "";
-    final vendorCtrl = Get.find<NexusVendorController>();
-    final vendorId = vendorCtrl.vendorId.value;
+      final prefs = await SharedPreferences.getInstance();
+      final guestId = prefs.getString("guestId") ?? "";
+      final vendorCtrl = Get.find<NexusVendorController>();
+      final vendorId = vendorCtrl.vendorId.value;
 
-    if (guestId.isEmpty) {
-      print("⚠ No guestId found.");
-      _showSnack("Something Went Wrong", backgroundColor: Colors.red);
+      if (guestId.isEmpty) {
+        print("⚠ No guestId found.");
+        _showSnack("Something Went Wrong", backgroundColor: Colors.red);
 
-      setState(() => isLoading = false); // 🔴 HIDE LOADER
-      return false;
-    }
+        setState(() => isLoading = false); // 🔴 HIDE LOADER
+        return false;
+      }
 
-    final String url =
-        "https://api.1clickbuilder.com/api/cart/guest/add-cart/$vendorId/$guestId";
+      final String url =
+          "https://api.1clickbuilder.com/api/cart/guest/add-cart/$vendorId/$guestId";
 
-    final selectedImage = product!.images!.isNotEmpty &&
-            selectedColorIndex < product!.images!.length
-        ? product!.images![selectedColorIndex]
-        : product!.images!.first;
+      final selectedImage = product!.images!.isNotEmpty &&
+              selectedColorIndex < product!.images!.length
+          ? product!.images![selectedColorIndex]
+          : product!.images!.first;
 
-    final selectedColor =
-        (selectedImage.colors != null && selectedImage.colors!.isNotEmpty)
-            ? selectedImage.colors!.first
-            : "";
+      final selectedColor =
+          (selectedImage.colors != null && selectedImage.colors!.isNotEmpty)
+              ? selectedImage.colors!.first
+              : "";
 
-    ProductSize? selectedSizeData;
-    if (selectedSizeIndex < selectedImage.sizes!.length) {
-      selectedSizeData = selectedImage.sizes![selectedSizeIndex];
-    }
+      ProductSize? selectedSizeData;
+      if (selectedSizeIndex < selectedImage.sizes!.length) {
+        selectedSizeData = selectedImage.sizes![selectedSizeIndex];
+      }
 
-    final Map<String, dynamic> body = {
-      "vendorId": product!.vendorId ?? "",
-      "productId": product!.id ?? "",
-      "image": selectedImage.image ?? "",
-      "price": selectedSizeData?.price?.toInt() ?? 0,
-      "quantity": 1,
-      "selectedColor": selectedColor,
-      "selectedSize": selectedSizeData?.size ?? "Free",
-    };
+      final Map<String, dynamic> body = {
+        "vendorId": product!.vendorId ?? "",
+        "productId": product!.id ?? "",
+        "image": selectedImage.image ?? "",
+        "price": selectedSizeData?.price?.toInt() ?? 0,
+        "quantity": 1,
+        "selectedColor": selectedColor,
+        "selectedSize": selectedSizeData?.size ?? "Free",
+      };
 
-    final res = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(body),
-    );
-        final response = jsonDecode(res.body);
-
+      final res = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+      final response = jsonDecode(res.body);
 
       if (res.statusCode == 200) {
-      _showSnack("Item added to cart", backgroundColor: Colors.green);
+        _showSnack("Item added to cart", backgroundColor: Colors.green);
 
         Get.find<GuestCartController>().loadGuestCart();
 
-      return true;
+        return true;
+      }
+
+      final error = response["error"]?["error"];
+
+      if (error == "ProductAlreadyInCart") {
+        _showSnack("Item already in your cart", backgroundColor: Colors.orange);
+        return true;
+      }
+
+      _showSnack("Failed to add item", backgroundColor: Colors.red);
+      return false;
+    } catch (e) {
+      print("Guest add cart exception: $e");
+      _showSnack("Something went wrong", backgroundColor: Colors.red);
+      return false;
+    } finally {
+      setState(() => isLoading = false);
     }
-
-    final error = response["error"]?["error"];
-
-    if (error == "ProductAlreadyInCart") {
-      _showSnack("Item already in your cart",
-          backgroundColor: Colors.orange);
-      return true;
-    }
-
-    _showSnack("Failed to add item", backgroundColor: Colors.red);
-    return false;
-
-  } catch (e) {
-    print("Guest add cart exception: $e");
-    _showSnack("Something went wrong", backgroundColor: Colors.red);
-    return false;
-  } finally {
-    setState(() => isLoading = false);
   }
-}
-
 }

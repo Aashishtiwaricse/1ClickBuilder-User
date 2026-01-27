@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/Modules/orders/NexusOrders.dart';
 import 'package:one_click_builder/themes/Nexus/api/NexusOrder/orderResponse.dart';
@@ -20,6 +21,9 @@ class ProfileOrdersController extends GetxController {
   }
 
   Future<void> fetchOrders() async {
+
+
+    print("fetch orders list data"); 
     try {
       isLoading.value = true;
 
@@ -29,7 +33,11 @@ class ProfileOrdersController extends GetxController {
       message.value = response.data?.message ?? '';
 
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+       print('error ${e}');
+
+      Get.snackbar('Error', "Something Went Wrong",
+      backgroundColor: Colors.red);
+      Color:Colors.white;
     } finally {
       isLoading.value = false;
     }

@@ -1,6 +1,11 @@
 
 /// ROOT RESPONSE
 /// =======================================================
+
+
+
+/// ROOT RESPONSE
+/// =======================================================
 class OrderApiResponse {
   final Meta? meta;
   final dynamic error;
@@ -13,6 +18,20 @@ class OrderApiResponse {
   });
 
   factory OrderApiResponse.fromJson(Map<String, dynamic> json) {
+
+    final dynamic dataField = json['data'];
+
+  // CASE 1 → data is a LIST → no orders
+  if (dataField is List) {
+    return OrderApiResponse(
+      meta: json['meta'] != null ? Meta.fromJson(json['meta']) : null,
+      error: json['error'],
+      data: OrderData(
+        message: json['error']?['message']?.toString() ?? "No orders found",
+        orders: [],
+      ),
+    );
+  }
     return OrderApiResponse(
       meta: json['meta'] != null ? Meta.fromJson(json['meta']) : null,
       error: json['error'],
@@ -59,7 +78,7 @@ class OrderData {
 }
 
 /// =======================================================
-/// ORDER MODEL (FULL)
+/// ORDER MODEL
 /// =======================================================
 class OrderModel {
   final String id;
@@ -104,38 +123,33 @@ class OrderModel {
       vendorId: json['vendorId']?.toString() ?? '',
       customerId: json['customerId']?.toString() ?? '',
       orderId: json['orderId']?.toString() ?? '',
-      orderForwarded: json['orderForwarded'] is int
-          ? json['orderForwarded']
-          : int.tryParse(json['orderForwarded']?.toString() ?? '0') ?? 0,
+      orderForwarded: int.tryParse(json['orderForwarded']?.toString() ?? '0') ?? 0,
       name: json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       avatar: json['avatar']?.toString() ?? '',
-      items: json['items'] is int
-          ? json['items']
-          : int.tryParse(json['items']?.toString() ?? '0') ?? 0,
+      items: int.tryParse(json['items']?.toString() ?? '0') ?? 0,
       price: json['price']?.toString() ?? '0',
       status: json['status']?.toString() ?? '',
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       products: (json['products'] as List? ?? [])
           .map((e) => ProductModel.fromJson(e))
           .toList(),
-      wholesalerCount: json['wholesalerCount'] is int
-          ? json['wholesalerCount']
-          : int.tryParse(json['wholesalerCount']?.toString() ?? '0') ?? 0,
+      wholesalerCount:
+          int.tryParse(json['wholesalerCount']?.toString() ?? '0') ?? 0,
       forward: json['forward'] == true,
     );
   }
 }
 
 /// =======================================================
-/// PRODUCT MODEL (FULL)
+/// PRODUCT MODEL
 /// =======================================================
 class ProductModel {
   final String id;
   final String name;
   final String category;
-  final String image;
+  final String? image; // <-- FIXED (nullable)
   final List<ProductImage> images;
   final String price;
   final int quantity;
@@ -150,7 +164,7 @@ class ProductModel {
     required this.id,
     required this.name,
     required this.category,
-    required this.image,
+    this.image,
     required this.images,
     required this.price,
     required this.quantity,
@@ -167,17 +181,15 @@ class ProductModel {
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       category: json['category']?.toString() ?? '',
-      image: json['image']?.toString() ?? '',
+      image: json['image']?.toString(),
       images: (json['images'] as List? ?? [])
           .map((e) => ProductImage.fromJson(e))
           .toList(),
       price: json['price']?.toString() ?? '0',
-      quantity: json['quantity'] is int
-          ? json['quantity']
-          : int.tryParse(json['quantity']?.toString() ?? '0') ?? 0,
+      quantity: int.tryParse(json['quantity']?.toString() ?? '0') ?? 0,
       discount: json['discount']?.toString() ?? '0',
-      sellingPrice: json['sellingPrice'] ?? 0,
-      costPrice: json['costPrice'] ?? 0,
+      sellingPrice: num.tryParse(json['sellingPrice']?.toString() ?? '0') ?? 0,
+      costPrice: num.tryParse(json['costPrice']?.toString() ?? '0') ?? 0,
       currency: json['currency']?.toString() ?? '',
       internationalShippingPrice:
           json['internationalshippingPrice']?.toString() ?? '0',

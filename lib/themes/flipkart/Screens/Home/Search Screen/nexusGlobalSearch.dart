@@ -107,8 +107,7 @@
 //             // 🔄 Products List
 //             Expanded(
 //               child: controller.isLoading
-//                   ? const Center(child:  Shimmer.fromColors(
-
+//                   ? const Center(child: CircularProgressIndicator())
 //                   : products.isEmpty
 //                   ? const Center(child: Text("No products found."))
 //                   : Padding(

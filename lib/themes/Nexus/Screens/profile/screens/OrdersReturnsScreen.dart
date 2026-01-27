@@ -371,58 +371,69 @@ class _OrdersReturnScreenState extends State<OrdersReturnScreen> {
     );
   }
 
-  void _fetchShipmentStatus(BuildContext context, String orderId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
+ void _fetchShipmentStatus(BuildContext context, String orderId) async {
+  // SHOW LOADER
+  Get.dialog(
+    Center(child: CircularProgressIndicator()),
+    barrierDismissible: false,
+  );
 
-    final url = Uri.parse(
-      "https://api.1clickbuilder.com/api/shiprocket/get-order-details/$orderId",
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString("token");
+
+  final url = Uri.parse(
+    "https://api.1clickbuilder.com/api/shiprocket/get-order-details/$orderId",
+  );
+
+  try {
+    final response = await http.get(
+      url,
+      headers: {
+        "Authorization": token.toString(),
+      },
     );
 
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          "Authorization": token.toString(),
-        },
-      );
+    // HIDE LOADER
+    if (Get.isDialogOpen == true) Get.back();
 
-      final result = jsonDecode(response.body);
+    final result = jsonDecode(response.body);
+    final data = result["data"];
 
-      final data = result["data"];
+    // If items status is null → Pending
+    final List items = data["items"] ?? [];
+    bool hasNullStatus = items.any((item) => item["status"] == null);
 
-      // If items status is null → Pending
-      final List items = data["items"] ?? [];
-      bool hasNullStatus = items.any((item) => item["status"] == null);
-
-      if (hasNullStatus) {
-        _showShipmentPopup(
-          context,
-          title: "Shipment Details",
-          status: "Pending",
-          orderId: data["order_id"] ?? "",
-          message: "This order is pending and shipment has not started.",
-        );
-        return;
-      }
-
-      // If status exists
-      String finalStatus = data["status"] ?? "Unknown";
-
-      // Example cancelled
-      String message = data["message"] ?? "";
-
+    if (hasNullStatus) {
       _showShipmentPopup(
         context,
         title: "Shipment Details",
-        status: finalStatus,
+        status: "Pending",
         orderId: data["order_id"] ?? "",
-        message: message.isEmpty ? "No status message provided." : message,
+        message: "This order is pending and shipment has not started.",
       );
-    } catch (e) {
-      Get.snackbar("Error", "Failed to load shipment status");
+      return;
     }
+
+    // If status exists
+    String finalStatus = data["status"] ?? "Unknown";
+
+    String message = data["message"] ?? "";
+
+    _showShipmentPopup(
+      context,
+      title: "Shipment Details",
+      status: finalStatus,
+      orderId: data["order_id"] ?? "",
+      message: message.isEmpty ? "No status message provided." : message,
+    );
+  } catch (e) {
+    // HIDE LOADER
+    if (Get.isDialogOpen == true) Get.back();
+
+    Get.snackbar("Error", "Failed to load shipment status");
   }
+}
+
 
   void _showShipmentPopup(
     BuildContext context, {

@@ -101,15 +101,17 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
         elevation: 0,
       ),
       body: loading
-          ?  Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),)
+          ? Center(
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 120,
+                  height: 20,
+                  color: Colors.white,
+                ),
+              ),
+            )
           : LayoutBuilder(
               builder: (context, constraints) {
                 return Row(
@@ -209,18 +211,19 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   Widget _rightProductGrid() {
     final width = MediaQuery.of(context).size.width;
 
-
     return Obx(() {
       if (productCtrl.loading.value) {
-        return  Center(child:  Shimmer.fromColors(
-    baseColor: Colors.grey.shade300,
-    highlightColor: Colors.grey.shade100,
-    child: Container(
-      width: 120,
-      height: 20,
-      color: Colors.white,
-    ),
-  ),);
+        return Center(
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              width: 120,
+              height: 20,
+              color: Colors.white,
+            ),
+          ),
+        );
       }
 
       if (productCtrl.products.isEmpty) {
@@ -235,7 +238,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
             crossAxisCount: 2,
             mainAxisSpacing: 24,
             crossAxisSpacing: 12,
-            childAspectRatio: width < 360 ? 0.39 : 0.43,
+            childAspectRatio: width < 360 ? 0.39 : 0.45,
           ),
           itemBuilder: (context, index) {
             return _buildProductCard(
@@ -251,8 +254,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   Widget _buildProductCard(BuildContext context, ProductData item) {
     final product = item.product;
     final screenHeight = MediaQuery.of(context).size.height;
-          final screenWidth = MediaQuery.of(context).size.width;
-
+    final screenWidth = MediaQuery.of(context).size.width;
 
     SizedBox(
       height: (screenHeight * 0.055).clamp(30.0, 52.0),
@@ -265,18 +267,29 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
         ? product!.images!.first.image ?? ""
         : "";
 
-    int price = 0;
-    if (product?.images?.isNotEmpty == true &&
-        product!.images!.first.sizes?.isNotEmpty == true) {
-      price =
-          int.tryParse(product.images!.first.sizes!.first.price ?? "0") ?? 0;
-    } else {
-      price = product?.price ?? 0;
+    // -------------------------------
+// 1️⃣ SELLING PRICE FROM images[0].sizes[0].price
+    double sellingPrice = 0;
+
+    if (product?.images != null &&
+        product!.images!.isNotEmpty &&
+        product.images!.first.sizes != null &&
+        product.images!.first.sizes!.isNotEmpty) {
+      sellingPrice = double.tryParse(
+            product.images!.first.sizes!.first.price ?? "0",
+          ) ??
+          0.0;
     }
 
-    final int mrp = product?.price ?? price;
-    final int discount =
-        mrp > price ? (((mrp - price) / mrp) * 100).round() : 0;
+// 2️⃣ MRP / CUT PRICE FROM API discountPrice
+    double mrp = (product!.discountPrice ?? 0).toDouble();
+
+// 3️⃣ DISCOUNT PERCENT
+    int discountPercent = 0;
+
+    if (mrp > sellingPrice && mrp > 0) {
+      discountPercent = (((mrp - sellingPrice) / mrp) * 100).round();
+    }
 
     return GestureDetector(
       onTap: () {
@@ -301,29 +314,29 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// IMAGE (ratio based → mobile safe)
-             ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(14)),
-            child: AspectRatio(
-              aspectRatio: 1 / 1.15, // controls height
-              child: Container(
-                color: Colors.grey.shade200,
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(14)),
+              child: AspectRatio(
+                aspectRatio: 1 / 1.15, // controls height
+                child: Container(
+                  color: Colors.grey.shade200,
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child:
+                                Icon(Icons.image, size: 40, color: Colors.grey),
+                          ),
+                        )
+                      : const Center(
                           child:
                               Icon(Icons.image, size: 40, color: Colors.grey),
                         ),
-                      )
-                    : const Center(
-                        child:
-                            Icon(Icons.image, size: 40, color: Colors.grey),
-                      ),
+                ),
               ),
             ),
-          ),
 
             /// TITLE
             Padding(
@@ -344,9 +357,10 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// SELLING PRICE (ROW 1)
+                  /// SELLING PRICE
+                  ///
                   Text(
-                    "₹$price",
+                    "₹$sellingPrice",
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -355,8 +369,9 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
 
                   const SizedBox(height: 4),
 
-                  /// MRP + DISCOUNT (ROW 2)
-                  if (mrp > price)
+                  /// MRP + DISCOUNT
+                  ///
+                  if (discountPercent > 0)
                     Row(
                       children: [
                         Text(
@@ -368,21 +383,22 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        if (discount > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              "$discount% OFF",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                        if (discountPercent > 0)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.arrow_downward,
+                                size: 12,
+                                color: Colors.green,
                               ),
-                            ),
+                              const SizedBox(width: 2),
+                              Text(
+                                "$discountPercent%",
+                                style: const TextStyle(
+                                    color: Colors.green, fontSize: 10),
+                              ),
+                            ],
                           ),
                       ],
                     ),
@@ -390,38 +406,46 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
               ),
             ),
 
-
             /// BUY BUTTON (fixed height)
-        const Spacer(),
+            const Spacer(),
 
-          /// ✅ BUY BUTTON (guaranteed visible)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              height: (screenWidth * 0.11).clamp(34.0, 40.0),
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFC1E3),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            /// ✅ BUY BUTTON (guaranteed visible)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                height: (screenWidth * 0.11).clamp(34.0, 40.0),
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFC1E3),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                ),
-                onPressed: () {},
-                child: Center(
-                  child: const Text(
-                    "BUY NOW",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                      color: Colors.black,
+                  onPressed: () {
+                    if (product?.id == null) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductByIdScreen(
+                            productId: product!.id.toString()),
+                      ),
+                    );
+                  },
+                  child: Center(
+                    child: const Text(
+                      "BUY NOW",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          )
+            )
           ],
         ),
       ),

@@ -4,6 +4,8 @@ import 'package:one_click_builder/themes/Nexus/api/profile/about.dart';
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/Modules/profile/aboutUs.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_html/flutter_html.dart';
+
 
 class NexusAboutScreen extends StatefulWidget {
   const NexusAboutScreen({super.key});
@@ -83,21 +85,26 @@ class _NexusAboutScreenState extends State<NexusAboutScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        aboutData!.title,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+               Html(
+  data: aboutData!.content, // 👈 dynamic HTML from API
+  style: {
+    "p": Style(
+      fontSize: FontSize(16),
+      lineHeight: LineHeight(1.5),
+      margin: Margins.only(bottom: 12),
+    ),
+    "strong": Style(
+      fontWeight: FontWeight.bold,
+    ),
+    "body": Style(
+      margin: Margins.zero,
+      padding: HtmlPaddings.zero,
+    ),
+  },
+),
+
                       const SizedBox(height: 16),
-                      Text(
-                        aboutData!.content,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      ),
+                    
                     ],
                   ),
                 ),
