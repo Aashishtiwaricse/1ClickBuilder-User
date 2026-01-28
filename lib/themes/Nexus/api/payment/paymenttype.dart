@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 class PaymentService {
   Future<List<String>> getDeliveryTypes(String vendorId) async {
     final url =
-        "https://api.1clickbuilder.com/api/payment-gateway/delivery-type/$vendorId";
+        "https:///api/payment-gateway/delivery-type/$vendorId";
 
     try {
       final response = await http.get(

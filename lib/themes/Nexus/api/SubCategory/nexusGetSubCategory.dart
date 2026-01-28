@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:one_click_builder/themes/Nexus/Modules/Nexus-Sub-Category/Nexus-sub-Category.dart';
-import 'package:one_click_builder/themes/Nexus/api/globalBaseUrl/globalBaseUrl.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 
 
 class ProductApiService {
@@ -11,7 +11,7 @@ class ProductApiService {
     String search = "",
   }) async {
     final url =
-        "$nexudsbaseUrl/product/product-list/$categoryId";
+        "${NexusAppConstant.baseUrl}/product/product-list/$categoryId";
 
         print("from Subcategory ${url}");
 

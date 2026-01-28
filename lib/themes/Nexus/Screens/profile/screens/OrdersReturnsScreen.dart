@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/Controllers/profile/profileController.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:http/http.dart' as http;
@@ -382,7 +383,7 @@ class _OrdersReturnScreenState extends State<OrdersReturnScreen> {
   final token = prefs.getString("token");
 
   final url = Uri.parse(
-    "https://api.1clickbuilder.com/api/shiprocket/get-order-details/$orderId",
+    "${NexusAppConstant.baseUrl}/api/shiprocket/get-order-details/$orderId",
   );
 
   try {

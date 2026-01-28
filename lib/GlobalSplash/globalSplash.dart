@@ -5,7 +5,6 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import 'package:one_click_builder/GlobalSplash/Model/model.dart';
 import 'package:one_click_builder/themes/Fuzzy/view/screen/splash_screen.dart';
-import 'package:one_click_builder/themes/Nexus/Main/main.dart';
 import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
 import 'package:one_click_builder/themes/Streamline/streamline.dart';
 import 'package:one_click_builder/themes/flipkart/Main/main.dart';

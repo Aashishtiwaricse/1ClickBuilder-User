@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GuestCartService {
-  static const String baseUrl = "https://api.1clickbuilder.com/api/cart/guest";
+  static  String baseUrl = "${NexusAppConstant.baseUrl}/api/cart/guest";
 
   /// Fetch guest cart list
 static Future<Map<String, dynamic>?> fetchGuestCart() async {

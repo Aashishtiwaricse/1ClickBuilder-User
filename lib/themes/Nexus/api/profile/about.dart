@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:one_click_builder/themes/Nexus/Modules/profile/aboutUs.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +15,7 @@ class AboutService {
     }
 
     final String url =
-        "https://api.1clickbuilder.com/api/page-service/about/$vendorId";
+        "${NexusAppConstant.baseUrl}/api/page-service/about/$vendorId";
 
     final response = await http.get(
       Uri.parse(url),

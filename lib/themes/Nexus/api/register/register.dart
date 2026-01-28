@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 
 
 class RegisterController extends GetxController {
@@ -33,7 +34,7 @@ class RegisterController extends GetxController {
     };
 
     final response = await http.post(
-      Uri.parse("https://api.1clickbuilder.com/api/user/customer-register"),
+      Uri.parse("${NexusAppConstant.baseUrl}/api/user/customer-register"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(body),
     );

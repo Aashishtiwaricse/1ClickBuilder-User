@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/api/Sigin/guestsigin.dart';
 import 'package:one_click_builder/themes/Nexus/api/cart/nexusCart.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -125,7 +126,7 @@ Future<void> removeItem({
     deletingItemId.value = cartItemId; // 👈 START loader
 
     final url =
-        'https://api.1clickbuilder.com/api/cart/remove-item/$VendorId';
+        '${NexusAppConstant.baseUrl}/api/cart/remove-item/$VendorId';
 
         print('${url}');
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -43,7 +44,7 @@ Future<void> resetPassword() async {
   setState(() => isLoading = true);
 
   final url = Uri.parse(
-    "https://api.1clickbuilder.com/api/user/reset-password",
+    "${NexusAppConstant.baseUrl}/api/user/reset-password",
   );
 
   try {

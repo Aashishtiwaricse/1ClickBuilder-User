@@ -18,6 +18,7 @@ import 'package:one_click_builder/themes/Nexus/api/cart/nexusAddtoCart.dart'
     as api;
 import 'package:one_click_builder/themes/Nexus/api/cart/nexusAddtoCart.dart'
     as cartApi;
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
 import 'package:shimmer/shimmer.dart';
 import 'dart:io';
@@ -1011,7 +1012,7 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
       }
 
       final String url =
-          "https://api.1clickbuilder.com/api/cart/guest/add-cart/$vendorId/$guestId";
+          "${NexusAppConstant.baseUrl}/api/cart/guest/add-cart/$vendorId/$guestId";
 
       final selectedImage = product!.images!.isNotEmpty &&
               selectedColorIndex < product!.images!.length

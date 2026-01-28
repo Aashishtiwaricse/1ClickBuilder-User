@@ -25,7 +25,7 @@ void clearSearch() {
     isLoading.value = true;
 
     final url =
-        'https://api.1clickbuilder.com/api/product/product-list/'
+        '/api/product/product-list/'
         '${vendorCtrl.vendorId.value}'
         '?page=1&limit=10&title=$query';
 

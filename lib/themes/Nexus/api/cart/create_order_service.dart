@@ -4,13 +4,14 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:http/http.dart' as http;
 import 'package:one_click_builder/themes/Fuzzy/utility/plugin_list.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 
 class CreateOrderService {
-  static const String _url =
-      "https://api.1clickbuilder.com/api/order/create-order";
+  static  final String _url =
+      "${NexusAppConstant.baseUrl}/api/order/create-order";
 static Future<bool> createOrder({
   required String vendorId,
   required String paymentMethod,
