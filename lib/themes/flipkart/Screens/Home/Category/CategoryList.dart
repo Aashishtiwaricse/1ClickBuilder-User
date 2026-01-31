@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Categories/category.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/allCategories.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/allSubCategory/allSubCategory.dart';
-import 'package:one_click_builder/themes/Nexus/api/Categoryalist/categoryList.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/Categories/category.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/Category/allCategories.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/Category/allSubCategory/allSubCategory.dart';
+import 'package:one_click_builder/themes/Flipkart/api/Categoryalist/categoryList.dart';
 import 'package:shimmer/shimmer.dart' show Shimmer;
 
 class NexusCategoryScreen extends StatefulWidget {
@@ -18,8 +18,8 @@ class NexusCategoryScreen extends StatefulWidget {
 }
 
 class _NexusCategoryScreenState extends State<NexusCategoryScreen> {
-  final NexusCategoryApiService apiService = NexusCategoryApiService();
-  NexusCategoryResponse? categoryResponse;
+  final FlipkartCategoryApiService apiService = FlipkartCategoryApiService();
+  FlipkartCategoryResponse? categoryResponse;
 
   bool loading = true;
 
@@ -30,7 +30,7 @@ class _NexusCategoryScreenState extends State<NexusCategoryScreen> {
   int currentIndex = 0;
   Timer? _timer;
   late Worker _vendorWorker;
-  final vendorController = Get.find<NexusVendorController>();
+  final vendorController = Get.find<FlipkartVendorController>();
 
   String trimTo8Words(String text) {
     final words = text.trim().split(RegExp(r"\s+"));
@@ -215,7 +215,7 @@ class _NexusCategoryScreenState extends State<NexusCategoryScreen> {
   Widget _categoryCard(dynamic item) {
     return GestureDetector(
       onTap: () {
-        final vendorController = Get.find<NexusVendorController>();
+        final vendorController = Get.find<FlipkartVendorController>();
         Navigator.push(
           context,
           MaterialPageRoute(

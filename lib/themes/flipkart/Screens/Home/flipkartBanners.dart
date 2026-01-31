@@ -10,14 +10,14 @@ import 'package:one_click_builder/themes/Nexus/Modules/Banners/banner.dart';
 
 
 
-class BannerScreen extends StatefulWidget {
-  const BannerScreen({super.key});
+class FlipkartBannerScreen extends StatefulWidget {
+  const FlipkartBannerScreen({super.key});
 
   @override
-  State<BannerScreen> createState() => _BannerScreenState();
+  State<FlipkartBannerScreen> createState() => _FlipkartBannerScreenState();
 }
 
-class _BannerScreenState extends State<BannerScreen> {
+class _FlipkartBannerScreenState extends State<FlipkartBannerScreen> {
   // ✅ SAFELY initialized controller
   final NexusVendorController vendorController =
       Get.find<NexusVendorController>();
@@ -46,7 +46,7 @@ class _BannerScreenState extends State<BannerScreen> {
       vendorController.vendorId,
       (vendorId) {
         if (vendorId.isNotEmpty) {
-          debugPrint("✅ Vendor ID received in BannerScreen: $vendorId");
+          debugPrint("✅ Vendor ID received in FlipkartBannerScreen: $vendorId");
           fetchBannerList(vendorId);
         }
       },

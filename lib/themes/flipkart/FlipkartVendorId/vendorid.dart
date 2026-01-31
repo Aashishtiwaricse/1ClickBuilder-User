@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
 
-class NexusVendorController extends GetxController {
+class FlipkartVendorController extends GetxController {
   /// Vendor ID
   final RxString vendorId = ''.obs;
 

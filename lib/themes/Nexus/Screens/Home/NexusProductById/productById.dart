@@ -706,6 +706,7 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
         _showLoginRequiredDialog(context);
         return false;
       } else {
+        print('guest cart execute if else');
         return await _guestAddToCart();
       }
     }
@@ -1035,9 +1036,13 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
         "image": selectedImage.image ?? "",
         "price": selectedSizeData?.price?.toInt() ?? 0,
         "quantity": 1,
-        "selectedColor": selectedColor,
         "selectedSize": selectedSizeData?.size ?? "Free",
       };
+
+// ✅ Add color ONLY if available
+      if (selectedImage.colors != null && selectedImage.colors!.isNotEmpty) {
+        body["selectedColor"] = selectedImage.colors!.first;
+      }
 
       final res = await http.post(
         Uri.parse(url),
@@ -1045,6 +1050,8 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
         body: jsonEncode(body),
       );
       final response = jsonDecode(res.body);
+
+      print("hhhhhh${res.body}");
 
       if (res.statusCode == 200) {
         _showSnack("Item added to cart", backgroundColor: Colors.green);

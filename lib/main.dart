@@ -35,27 +35,27 @@ class MyApp extends StatelessWidget {
     
 
     return GetMaterialApp(
-      title: 'One Click Builder User',
+      title: '1Clickbuilder User',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Poppins',
       ),
-      routes: {
-        '/orderHistory': (context) => const OrderHistory(),
-        '/wishlist': (context) => const WishlistScreen(),
-        '/payment': (context) => PaymentScreen(),
-        '/shippingDetails': (context) => ShippingDetailsScreen(),
-        '/language': (context) => const LanguageScreen(),
-        '/currency': (context) => const CurrencyScreen(),
-        '/setting': (context) => const SettingScreen(),
-        '/termsCondition': (context) => const TermsConditionScreen(),
-        '/retrunScreen': (context) => const ReturnScreen(),
-        '/cancelScreen': (context) => const CancellationScreen(),
-        '/aboutUs': (context) => const AboutUsScreen(),
-        '/privacyScreen': (context) => const PrivacyScreen(),
-        '/help': (context) => const HelpScreen(),
-      },
+      // routes: {
+      //   '/orderHistory': (context) => const OrderHistory(),
+      //   '/wishlist': (context) => const WishlistScreen(),
+      //   '/payment': (context) => PaymentScreen(),
+      //   '/shippingDetails': (context) => ShippingDetailsScreen(),
+      //   '/language': (context) => const LanguageScreen(),
+      //   '/currency': (context) => const CurrencyScreen(),
+      //   '/setting': (context) => const SettingScreen(),
+      //   '/termsCondition': (context) => const TermsConditionScreen(),
+      //   '/retrunScreen': (context) => const ReturnScreen(),
+      //   '/cancelScreen': (context) => const CancellationScreen(),
+      //   '/aboutUs': (context) => const AboutUsScreen(),
+      //   '/privacyScreen': (context) => const PrivacyScreen(),
+      //   '/help': (context) => const HelpScreen(),
+      // },
       home: const GlobalSplash(),
     );
   }

@@ -1,37 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/BestSellerScreen/nexusBestSeller.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/CategoryList.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/NexusProduct/nexusNewArrival.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/banners.dart';
-import 'package:one_click_builder/themes/Nexus/api/BestSeller/NexusBestSeller.dart';
-import 'package:one_click_builder/themes/Nexus/api/Categoryalist/categoryList.dart';
-import 'package:one_click_builder/themes/Nexus/api/NexusProduct/nexusProduct.dart';
-import 'package:one_click_builder/themes/Nexus/api/banners/bannersApi.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/HomeCategoryTab.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/flipkartBanners.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/BestSellerScreen/nexusBestSeller.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/NexusProduct/nexusNewArrival.dart';
+import 'package:one_click_builder/themes/Flipkart/api/BestSeller/NexusBestSeller.dart';
+import 'package:one_click_builder/themes/Flipkart/api/Categoryalist/categoryList.dart';
+import 'package:one_click_builder/themes/Flipkart/api/NexusProduct/nexusProduct.dart';
+import 'package:one_click_builder/themes/Flipkart/api/banners/bannersApi.dart';
 
 
-class NexusHome extends StatefulWidget {
-  const NexusHome({super.key});
+class FlipkartHome extends StatefulWidget {
+  const FlipkartHome({super.key});
 
   @override
-  State<NexusHome> createState() => _NexusHomeState();
+  State<FlipkartHome> createState() => _FlipkartHomeState();
 }
 
-class _NexusHomeState extends State<NexusHome> {
+class _FlipkartHomeState extends State<FlipkartHome> {
   final bannerApi = NexusBannerApiService();
-  final categoryApi = NexusCategoryApiService();
+  final categoryApi = FlipkartCategoryApiService();
   final newApi = ProductService();
   final bestApi = BestSellerService();
   @override
   void initState() {
     super.initState();
-    Get.put(NexusVendorController(), permanent: true);
+    Get.put(FlipkartVendorController(), permanent: true);
+      final vendorController =
+      Get.put(FlipkartVendorController(), permanent: true);
+
+  vendorController.loadVendorFromStorage();
   }
 
  Future<void> _refreshHome() async {
-    final vendorId = Get.find<NexusVendorController>().vendorId.value;
+    final vendorId = Get.find<FlipkartVendorController>().vendorId.value;
 
     print("🔄 Pull-to-Refresh: Fetching all Home APIs again…");
 
@@ -54,18 +58,24 @@ class _NexusHomeState extends State<NexusHome> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
-            children: [
-              BannerScreen(),
-              const SizedBox(height:20),
-              NexusCategoryScreen(),
-             // const SizedBox(height:20),
-              NewArrivalSection(),
-              const SizedBox(height:20),
-              BestSellerScreen(),
-                        const SizedBox(height: 10)
-            //  const SizedBox(height: 40),
-            ],
-          ),
+  children: [
+
+    /// 🔥 BANNERS
+    //FlipkartBannerScreen(),
+    const SizedBox(height: 10),
+
+    /// 🔥 CATEGORY TABS (LIKE FLIPKART)
+    const HomeCategoryTabs(),
+
+    /// 🔥 OTHER HOME SECTIONS (OPTIONAL)
+    const SizedBox(height: 20),
+    NewArrivalSection(),
+    const SizedBox(height: 20),
+    BestSellerScreen(),
+    const SizedBox(height: 40),
+  ],
+),
+
         ),
       ),
     );

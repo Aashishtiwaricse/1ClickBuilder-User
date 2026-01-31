@@ -5,6 +5,7 @@ import 'package:one_click_builder/themes/Nexus/Main/main.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/RegisterAccount/regiisterAccount.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/ResetPassword/forgotPassword.dart';
 import 'package:one_click_builder/themes/Nexus/api/Sigin/sigin.dart';
+import 'package:one_click_builder/themes/flipkart/Main/main.dart';
 
 class NexusSignInScreen extends StatefulWidget {
   const NexusSignInScreen({super.key});
@@ -68,7 +69,7 @@ input = "$selectedCode$input"; // correct
         icon: const Icon(Icons.check_circle, color: Colors.white),
       );
 
-      Get.offAll(() => NexusMain());
+      Get.offAll(() => FlipkartMain());
     } else {
       errorSnack("Invalid credentials");
     }

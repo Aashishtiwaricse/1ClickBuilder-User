@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 import 'package:one_click_builder/themes/Nexus/Modules/Nexus-Sub-Category/Nexus-sub-Category.dart';
-import 'package:one_click_builder/themes/Nexus/api/globalBaseUrl/globalBaseUrl.dart';
-
 
 class ProductApiService {
   final Dio _dio = Dio();
@@ -11,7 +10,7 @@ class ProductApiService {
     String search = "",
   }) async {
     final url =
-        "$nexudsbaseUrl/product/product-list/$categoryId";
+        "${FlipkartAppConstant.baseUrl}/product/product-list/$categoryId";
 
         print("from Subcategory ${url}");
 

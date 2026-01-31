@@ -396,27 +396,40 @@ class WholesalerAddress {
     this.originPostalCode,
   });
 
+  static List<String>? _safeList(dynamic value) {
+    if (value == null) return null;
+
+    // If backend sends JSON string
+    if (value is String) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is List) {
+          return decoded.map((e) => e.toString()).toList();
+        }
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // If backend sends direct list
+    if (value is List) {
+      return value.map((e) => e.toString()).toList();
+    }
+
+    // If backend sends int, bool, map, etc
+    return null;
+  }
+
   factory WholesalerAddress.fromJson(Map<String, dynamic> json) =>
       WholesalerAddress(
         userId: json["userId"]?.toString(),
-
-        originCountry: json["originCountry"] != null
-            ? List<String>.from(jsonDecode(json["originCountry"]))
-            : null,
-
-        originState: json["originState"] != null
-            ? List<String>.from(jsonDecode(json["originState"]))
-            : null,
-
-        originCity: json["originCity"] != null
-            ? List<String>.from(jsonDecode(json["originCity"]))
-            : null,
-
-        originPostalCode: json["originPostalCode"] != null
-            ? List<String>.from(jsonDecode(json["originPostalCode"]))
-            : null,
+        originCountry: _safeList(json["originCountry"]),
+        originState: _safeList(json["originState"]),
+        originCity: _safeList(json["originCity"]),
+        originPostalCode: _safeList(json["originPostalCode"]),
       );
 }
+
 
 /// ================= RESALER =================
 class ResalerAddress {

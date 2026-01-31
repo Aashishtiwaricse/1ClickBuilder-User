@@ -242,22 +242,7 @@ class _GuestCartScreenState extends State<GuestCartScreen> {
                             fontSize: 16, fontWeight: FontWeight.w600)),
                     Spacer(),
 
-                    // Container(
-                    //   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    //   decoration: BoxDecoration(
-                    //     borderRadius: BorderRadius.circular(8),
-                    //     border: Border.all(color: Colors.grey.shade300),
-                    //   ),
-                    //   child: Row(
-                    //     children: [
-                    //       Icon(Icons.remove, size: 20),
-                    //       SizedBox(width: 12),
-                    //       Text("${item.quantity}", style: TextStyle(fontSize: 16)),
-                    //       SizedBox(width: 12),
-                    //       Icon(Icons.add, size: 20),
-                    //     ],
-                    //   ),
-                    // ),
+            
 
                     Spacer(),
 

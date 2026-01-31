@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 
 
 
@@ -25,7 +26,7 @@ void clearSearch() {
     isLoading.value = true;
 
     final url =
-        '/api/product/product-list/'
+        '${NexusAppConstant.baseUrl}/api/product/product-list/'
         '${vendorCtrl.vendorId.value}'
         '?page=1&limit=10&title=$query';
 

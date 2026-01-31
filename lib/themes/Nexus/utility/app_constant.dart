@@ -2,6 +2,10 @@ class NexusAppConstant {
   
 
   static const String baseUrl = 'https://api.1clickbuilder.com';
+  //  static const String baseUrl = 'https://shopingo24.in';
+
+
+
   static const String registerUrl = '/api/user/customer-register';
   static const String loginUrl = '/api/user/login';
 

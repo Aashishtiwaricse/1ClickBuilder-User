@@ -1,4 +1,4 @@
-class NexusAppConstant {
+class FlipkartAppConstant {
   
 
   static const String baseUrl = 'https://api.1clickbuilder.com';

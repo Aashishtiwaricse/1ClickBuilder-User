@@ -161,265 +161,280 @@ class _FlipkartCartScreenState extends State<FlipkartCartScreen> {
   }
 
   // ---------------- CART LIST ----------------
-Widget _cartList(cart) {
-  return ListView.builder(
-    padding: const EdgeInsets.all(12),
-    itemCount: cart.items.length,
-    itemBuilder: (_, index) {
-      final item = cart.items[index];
-      final vendorId = vendorCtrl.vendorId.value;
+  Widget _cartList(cart) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: cart.items.length,
+      itemBuilder: (_, index) {
+        final item = cart.items[index];
+        final vendorId = vendorCtrl.vendorId.value;
 
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            // TOP ROW (Image + Title)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.network(
-                    _safeImage(item.image),
-                    height: 90,
-                    width: 90,
-                    fit: BoxFit.cover,
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // TOP ROW (Image + Title)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      _safeImage(item.image),
+                      height: 90,
+                      width: 90,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
+                  const SizedBox(width: 12),
 
-                // TITLE + PRICE + RATING
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.productName,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                  // TITLE + PRICE + RATING
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.productName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
+
+                        const SizedBox(height: 6),
+
+                        // ⭐ Rating
+                        // Row(
+                        //   children: [
+                        //     Container(
+                        //       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        //       decoration: BoxDecoration(
+                        //         color: Colors.green,
+                        //         borderRadius: BorderRadius.circular(4),
+                        //       ),
+                        //       child: Row(
+                        //         children: const [
+                        //           Text("4.7", style: TextStyle(color: Colors.white, fontSize: 12)),
+                        //           Icon(Icons.star, color: Colors.white, size: 12),
+                        //         ],
+                        //       ),
+                        //     ),
+                        //     const SizedBox(width: 6),
+                        //     const Text("(9)", style: TextStyle(color: Colors.grey)),
+                        //   ],
+                        // ),
+
+                        // const SizedBox(height: 6),
+
+                        // Price Section
+                        Row(
+                          children: [
+                            // Selling Price
+                            Text(
+                              "₹${item.sellingPrice}",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(width: 6),
+
+                            // Show MRP & Discount only if MRP > Selling Price
+                            if (item.mrpPrice > item.sellingPrice) ...[
+                              Text(
+                                "₹${item.mrpPrice}",
+                                style: TextStyle(
+                                  decoration: TextDecoration.lineThrough,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "${(((item.mrpPrice - item.sellingPrice) / item.mrpPrice) * 100).round()}% OFF",
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              // Qty Selector
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      _qtyBtn(Icons.remove, () => cartCtrl.decreaseQty(index)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(item.quantity.toString()),
                       ),
-
-                      const SizedBox(height: 6),
-
-                      // ⭐ Rating
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              children: const [
-                                Text("4.7", style: TextStyle(color: Colors.white, fontSize: 12)),
-                                Icon(Icons.star, color: Colors.white, size: 12),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text("(9)", style: TextStyle(color: Colors.grey)),
-                        ],
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      // Price Section
-                      Row(
-                        children: [
-                          Text(
-                            "₹${item.sellingPrice}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "₹999",
-                            style: TextStyle(
-                              decoration: TextDecoration.lineThrough,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            "60% OFF",
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                      _qtyBtn(Icons.add, () => cartCtrl.increaseQty(index)),
                     ],
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            // Qty Selector
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    _qtyBtn(Icons.remove, () => cartCtrl.decreaseQty(index)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(item.quantity.toString()),
-                    ),
-                    _qtyBtn(Icons.add, () => cartCtrl.increaseQty(index)),
-                  ],
-                ),
-
-                Obx(() {
-                  final isDeleting =
-                      cartCtrl.deletingItemId.value == item.cartItemId;
-
-                  return isDeleting
-                      ? const CircularProgressIndicator(strokeWidth: 2)
-                      : IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            cartCtrl.removeItem(
-                              cartItemId: item.cartItemId,
-                              VendorId: vendorId,
-                            );
-                          },
-                        );
-                }),
-              ],
-            ),
-
-            const Divider(height: 20),
-
-            // ACTION BUTTONS
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const [
-                Text("Remove", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600)),
-                Text("Save for later", style: TextStyle(color: Colors.blue)),
-                Text("Buy this now", style: TextStyle(color: Colors.blue)),
-              ],
-            )
-          ],
-        ),
-      );
-    },
-  );
-}
-Widget _orderSummary(cart) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 8,
-          offset: Offset(0, -2),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // PRICE BREAKUP
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children:  [
-            Text("MRP"),
-            Text(" ₹${cart.totalPrice.toStringAsFixed(2)}"),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text("Fees"),
-            Text("₹ 0"),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text("Discounts"),
-            Text("- ₹601", style: TextStyle(color: Colors.green)),
-          ],
-        ),
-
-        const Divider(height: 20),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Total Amount",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "₹${cart.totalPrice.toStringAsFixed(2)}",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.green.shade50,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: const Text(
-            "✔ You'll save ₹594 on this order!",
-            style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Bottom Button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _showCheckoutForm,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber.shade700,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+               
+                ],
               ),
+
+              const Divider(height: 20),
+
+              // ACTION BUTTONS
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children:  [
+
+       Obx(() {
+                    final isDeleting =
+                        cartCtrl.deletingItemId.value == item.cartItemId;
+
+                    return isDeleting
+                        ? const CircularProgressIndicator(strokeWidth: 2)
+                        // : IconButton(
+                        //     icon: const Icon(Icons.delete, color: Colors.red),
+                        //     onPressed: () {
+                        //       cartCtrl.removeItem(
+                        //         cartItemId: item.cartItemId,
+                        //         VendorId: vendorId,
+                        //       );
+                        //     },
+                 :    GestureDetector(
+                     onTap: () {
+                              cartCtrl.removeItem(
+                                cartItemId: item.cartItemId,
+                                VendorId: vendorId,
+                              );
+                            },
+                    
+                    child: Text("Remove",
+                        style: TextStyle(
+                            color: Colors.blue, fontWeight: FontWeight.w600)),
+                  );
+                  }),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _orderSummary(cart) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // PRICE BREAKUP
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("MRP"),
+              Text(" ₹${cart.totalPrice.toStringAsFixed(2)}"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text("Fees"),
+              Text("₹ 0"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text("Discounts"),
+              Text("₹ 0", style: TextStyle(color: Colors.green)),
+            ],
+          ),
+
+          const Divider(height: 20),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Total Amount",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "₹${cart.totalPrice.toStringAsFixed(2)}",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: const Text(
-              "Place Order",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+              "✔ You'll save ₹594 on this order!",
+              style:
+                  TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Bottom Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _showCheckoutForm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber.shade700,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: const Text(
+                "Place Order",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   // ---------------- CHECKOUT ----------------
 

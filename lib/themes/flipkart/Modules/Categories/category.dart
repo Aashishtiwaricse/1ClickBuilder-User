@@ -1,16 +1,16 @@
-class NexusCategoryResponse {
+class FlipkartCategoryResponse {
   final Meta? meta;
   final dynamic error;
   final CategoryData? data;
 
-  NexusCategoryResponse({
+  FlipkartCategoryResponse({
     this.meta,
     this.error,
     this.data,
   });
 
-  factory NexusCategoryResponse.fromJson(Map<String, dynamic> json) {
-    return NexusCategoryResponse(
+  factory FlipkartCategoryResponse.fromJson(Map<String, dynamic> json) {
+    return FlipkartCategoryResponse(
       meta: json["meta"] != null ? Meta.fromJson(json["meta"]) : null,
       error: json["error"],
       data: json["data"] != null ? CategoryData.fromJson(json["data"]) : null,

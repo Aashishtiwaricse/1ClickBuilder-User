@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:one_click_builder/themes/Flipkart/Screens/Cart/flipkartCart.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/home.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/profile/screens/flipkartProfileScreen.dart';
 import 'package:one_click_builder/themes/Fuzzy/utility/plugin_list.dart';
 import 'package:one_click_builder/themes/Nexus/Controllers/Category/CategoryUIController.dart';
 import 'package:one_click_builder/themes/Nexus/Controllers/Search/searchControllers.dart';
@@ -11,7 +13,6 @@ import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/BottomNavCategory/bottoNavCategory.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/Home/home.dart';
 import 'package:one_click_builder/themes/Nexus/Screens/SearchScreren/NexusSearchScreen.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/nexusProfileScreen.dart';
 import 'package:one_click_builder/themes/Nexus/utility/app_theme.dart';
 
 class FlipkartMain extends StatefulWidget {
@@ -32,9 +33,9 @@ class _FlipkartMainState extends State<FlipkartMain> {
 
   /// ✅ Pages
   final List<Widget> _pages = [
-    const NexusHome(),
+    const FlipkartHome(),
     const AllCategoriesScreen(),
-    const ProfileScreen(),
+    const FlipkartProfileScreen(),
         FlipkartCartScreen(),
 
   ];
