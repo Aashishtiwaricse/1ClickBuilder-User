@@ -129,49 +129,50 @@ class _CheckoutFormState extends State<CheckoutForm> {
                           ),
                           const SizedBox(height: 10),
                           //    _input(streetCtrl, "House / Flat / Building"),
-                      _input(
-  addressLine1Ctrl,
-  "Flat, House No., Building, Company, Apartment",
-  validator: (v) {
-    if (v == null || v.trim().isEmpty) {
-      return "Enter Flat / House / Building\n"
-             "Example: Flat 203, Sunshine Apartments";
-    }
+                          _input(
+                            addressLine1Ctrl,
+                            "Flat, House No., Building, Company, Apartment",
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return "Enter Flat / House / Building\n"
+                                    "Example: Flat 203, Sunshine Apartments";
+                              }
 
-    final value = v.trim();
+                              final value = v.trim();
 
-    if (value.length < 5) {
-      return "Enter complete Flat / House details\n"
-             "Example: House No 12, Green Residency";
-    }
+                              if (value.length < 5) {
+                                return "Enter complete Flat / House details\n"
+                                    "Example: House No 12, Green Residency";
+                              }
 
-    // must contain letters
-    if (!RegExp(r'[A-Za-z]').hasMatch(value)) {
-      return "Address must contain words\n"
-             "Example: Flat 12, Blue Towers";
-    }
+                              // must contain letters
+                              if (!RegExp(r'[A-Za-z]').hasMatch(value)) {
+                                return "Address must contain words\n"
+                                    "Example: Flat 12, Blue Towers";
+                              }
 
-    // block junk typing
-    if (RegExp(r'(asdf|qwerty|zxcv)', caseSensitive: false)
-        .hasMatch(value)) {
-      return "Please enter a valid address\n"
-             "Example: Flat 203, Sunshine Apartments";
-    }
+                              // block junk typing
+                              if (RegExp(r'(asdf|qwerty|zxcv)',
+                                      caseSensitive: false)
+                                  .hasMatch(value)) {
+                                return "Please enter a valid address\n"
+                                    "Example: Flat 203, Sunshine Apartments";
+                              }
 
-    // enforce correct order keywords
-    final hasKeyword = RegExp(
-      r'(flat|house|building|apt|apartment|floor|company)',
-      caseSensitive: false,
-    ).hasMatch(value);
+                              // enforce correct order keywords
+                              final hasKeyword = RegExp(
+                                r'(flat|house|building|apt|apartment|floor|company)',
+                                caseSensitive: false,
+                              ).hasMatch(value);
 
-    if (!hasKeyword) {
-      return "Start with Flat / House / Building\n"
-             "Example: Flat 203, Sunshine Apartments";
-    }
+                              if (!hasKeyword) {
+                                return "Start with Flat / House / Building\n"
+                                    "Example: Flat 203, Sunshine Apartments";
+                              }
 
-    return null;
-  },
-),
+                              return null;
+                            },
+                          ),
 
                           _input(
                             addressLine2Ctrl,
