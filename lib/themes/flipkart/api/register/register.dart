@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/SiginScreen/signinScreen.dart';
 
 
 class RegisterController extends GetxController {
-  final NexusVendorController vendorCtrl = Get.find();
+  final FlipkartVendorController vendorCtrl = Get.find();
 
   RxBool isLoading = false.obs;
 
@@ -56,7 +56,7 @@ class RegisterController extends GetxController {
 
       /// Navigate to sign in screen and CLEAR ROUTE STACK
       Future.delayed(Duration(seconds: 1), () {
-        Get.offAll(() => NexusSignInScreen());
+        Get.offAll(() => FlipkartSignInScreen());
       });
 
     } else {

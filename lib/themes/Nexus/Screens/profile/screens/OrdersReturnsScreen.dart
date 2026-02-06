@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:one_click_builder/themes/Nexus/Controllers/profile/profileController.dart';
+import 'package:one_click_builder/themes/Nexus/api/NexusOrder/deleteOrders.dart';
 import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
 import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:http/http.dart' as http;
-
 
 class OrdersReturnScreen extends StatefulWidget {
   const OrdersReturnScreen({super.key});
@@ -24,9 +24,98 @@ class _OrdersReturnScreenState extends State<OrdersReturnScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      controller.fetchOrders();   // 🔥 fetch instantly
+      controller.fetchOrders(); // 🔥 fetch instantly
     });
   }
+
+  void _showCancelOrderPopup(BuildContext context, String orderId) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.warning_amber_rounded,
+                color: Colors.red, size: 60),
+
+            const SizedBox(height: 16),
+
+            const Text(
+              "Cancel Order?",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            const Text(
+              "Are you sure you want to cancel this order? This action cannot be undone.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("No"),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _cancelOrder(orderId);
+                    },
+                    child: const Text("Yes, Cancel"),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+void _cancelOrder(String orderId) async {
+  Get.dialog(
+    const Center(child: CircularProgressIndicator()),
+    barrierDismissible: false,
+  );
+
+  final success = await DeleteOrderService.deleteOrder(orderId);
+
+  if (Get.isDialogOpen == true) Get.back();
+
+  if (success) {
+    Get.snackbar(
+      "Success",
+      "Order cancelled successfully",
+      backgroundColor: Colors.green.shade100,
+    );
+
+    controller.fetchOrders(); // 🔥 refresh list
+  } else {
+    Get.snackbar(
+      "Error",
+      "Failed to cancel order",
+      backgroundColor: Colors.red.shade100,
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,32 +163,30 @@ class _OrdersReturnScreenState extends State<OrdersReturnScreen> {
   // ORDERS LIST
   // =======================================================
   Widget _ordersList() {
-
     // 🔥 If no orders found
-  if (controller.orders.isEmpty) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 50),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top:210),
-          child: Column(
-            children: [
-              Icon(Icons.shopping_bag_outlined,
-                  size: 70, color: Colors.grey),
-              const SizedBox(height: 12),
-              const Text(
-                "No Orders Found",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey),
-              ),
-            ],
+    if (controller.orders.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 50),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 210),
+            child: Column(
+              children: [
+                Icon(Icons.shopping_bag_outlined, size: 70, color: Colors.grey),
+                const SizedBox(height: 12),
+                const Text(
+                  "No Orders Found",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
     return ListView.builder(
       itemCount: controller.orders.length,
       shrinkWrap: true,
@@ -179,13 +266,20 @@ class _OrdersReturnScreenState extends State<OrdersReturnScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    order.status,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: _statusColor(order.status),
-                    ),
-                  ),
+                 
+              GestureDetector(
+  onTap: () {
+    _showCancelOrderPopup(context, order.id);
+  },
+  child: const Text(
+    'Cancel Order',
+    style: TextStyle(
+      color: Colors.red,
+      fontWeight: FontWeight.w600,
+    ),
+  ),
+),
+
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () {
@@ -372,69 +466,70 @@ class _OrdersReturnScreenState extends State<OrdersReturnScreen> {
     );
   }
 
- void _fetchShipmentStatus(BuildContext context, String orderId) async {
-  // SHOW LOADER
-  Get.dialog(
-    Center(child: CircularProgressIndicator()),
-    barrierDismissible: false,
-  );
-
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token");
-
-  final url = Uri.parse(
-    "${NexusAppConstant.baseUrl}/api/shiprocket/get-order-details/$orderId",
-  );
-
-  try {
-    final response = await http.get(
-      url,
-      headers: {
-        "Authorization": token.toString(),
-      },
+  void _fetchShipmentStatus(BuildContext context, String orderId) async {
+    // SHOW LOADER
+    Get.dialog(
+      Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
     );
 
-    // HIDE LOADER
-    if (Get.isDialogOpen == true) Get.back();
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
 
-    final result = jsonDecode(response.body);
-    final data = result["data"];
+    final url = Uri.parse(
+      "${NexusAppConstant.baseUrl}/api/shiprocket/get-order-details/$orderId",
+    );
 
-    // If items status is null → Pending
-    final List items = data["items"] ?? [];
-    bool hasNullStatus = items.any((item) => item["status"] == null);
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          "Authorization": token.toString(),
+        },
+      );
 
-    if (hasNullStatus) {
+      // HIDE LOADER
+      if (Get.isDialogOpen == true) Get.back();
+
+      final result = jsonDecode(response.body);
+      print(response.body);
+      print('kkkkkkkk');
+      final data = result["data"];
+
+      // If items status is null → Pending
+      final List items = data["items"] ?? [];
+      bool hasNullStatus = items.any((item) => item["status"] == null);
+
+      if (hasNullStatus) {
+        _showShipmentPopup(
+          context,
+          title: "Shipment Details",
+          status: "Pending",
+          orderId: data["order_id"] ?? "",
+          message: "This order is pending and shipment has not started.",
+        );
+        return;
+      }
+
+      // If status exists
+      String finalStatus = data["status"] ?? "Unknown";
+
+      String message = data["message"] ?? "";
+
       _showShipmentPopup(
         context,
         title: "Shipment Details",
-        status: "Pending",
+        status: finalStatus,
         orderId: data["order_id"] ?? "",
-        message: "This order is pending and shipment has not started.",
+        message: message.isEmpty ? "No status message provided." : message,
       );
-      return;
+    } catch (e) {
+      // HIDE LOADER
+      if (Get.isDialogOpen == true) Get.back();
+
+      Get.snackbar("Error", "Failed to load shipment status");
     }
-
-    // If status exists
-    String finalStatus = data["status"] ?? "Unknown";
-
-    String message = data["message"] ?? "";
-
-    _showShipmentPopup(
-      context,
-      title: "Shipment Details",
-      status: finalStatus,
-      orderId: data["order_id"] ?? "",
-      message: message.isEmpty ? "No status message provided." : message,
-    );
-  } catch (e) {
-    // HIDE LOADER
-    if (Get.isDialogOpen == true) Get.back();
-
-    Get.snackbar("Error", "Failed to load shipment status");
   }
-}
-
 
   void _showShipmentPopup(
     BuildContext context, {

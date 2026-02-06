@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/Category/allCategories.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/BottomNavCategory/bottoNavCategory.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/Category/allCategories.dart';
 
 
 class NexusAppRoutes {

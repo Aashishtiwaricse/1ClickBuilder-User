@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future guestLogin(String vendorId) async {
-  const String url = "${NexusAppConstant.baseUrl}/api/user/guest-login";
+  const String url = "${FlipkartAppConstant.baseUrl}/api/user/guest-login";
 
   final Map<String, dynamic> body = {
     "vendorId": vendorId,

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Cart/checkoutForm.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/cart_controller.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/checkoutController/checheckout.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Cart/checkoutForm.dart';
+import 'package:one_click_builder/themes/Flipkart/api/payment/paymenttype.dart';
 import 'package:one_click_builder/themes/flipkart/Screens/Cart/guestCartScreen.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/cart_controller.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/checkoutController/checheckout.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/api/payment/paymenttype.dart';
+
 import '../Home/SiginScreen/signinScreen.dart';
 
 class FlipkartCartScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class FlipkartCartScreen extends StatefulWidget {
 }
 
 class _FlipkartCartScreenState extends State<FlipkartCartScreen> {
-  final vendorCtrl = Get.find<NexusVendorController>();
+  final vendorCtrl = Get.find<FlipkartVendorController>();
   final cartCtrl = Get.find<CartController>();
   final checkoutCtrl = Get.put(CheckoutController());
   String? country, state, city;
@@ -70,19 +71,21 @@ class _FlipkartCartScreenState extends State<FlipkartCartScreen> {
       final cart = cartCtrl.cart.value;
       if (cart == null || cart.items.isEmpty) return _emptyCartUI();
 
-      return Scaffold(
-        backgroundColor: const Color(0xffF6F6F6),
-        appBar: AppBar(
-          title: Obx(() {
-            final count = cartCtrl.cartCount.value;
-            return Text("My Cart ($count)");
-          }),
-        ),
-        body: Column(
-          children: [
-            Expanded(child: _cartList(cart)),
-            _orderSummary(cart),
-          ],
+      return SafeArea(
+        child: Scaffold(
+          backgroundColor: const Color(0xffF6F6F6),
+          appBar: AppBar(
+            title: Obx(() {
+              final count = cartCtrl.cartCount.value;
+              return Text("My Cart ($count)");
+            }),
+          ),
+          body: Column(
+            children: [
+              Expanded(child: _cartList(cart)),
+              _orderSummary(cart),
+            ],
+          ),
         ),
       );
     });
@@ -113,7 +116,7 @@ class _FlipkartCartScreenState extends State<FlipkartCartScreen> {
             const Text("You are not logged in"),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => Get.to(() => NexusSignInScreen()),
+              onPressed: () => Get.to(() => FlipkartSignInScreen()),
               child: const Text("Login"),
             ),
           ],

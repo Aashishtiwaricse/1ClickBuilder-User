@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
-import 'package:one_click_builder/themes/Nexus/api/register/register.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/api/register/register.dart';
+
 
 class CreateAccountScreen extends StatelessWidget {
   final RegisterController regCtrl = Get.put(RegisterController());
-  final NexusVendorController vendorCtrl = Get.find();
+  final FlipkartVendorController vendorCtrl = Get.find();
 
   final firstName = TextEditingController();
   final lastName = TextEditingController();
@@ -133,7 +134,7 @@ class CreateAccountScreen extends StatelessWidget {
                   Text("Already have an account?",
                       style: TextStyle(color: Colors.black87)),
                   TextButton(
-                    onPressed: () => Get.to(() => NexusSignInScreen()),
+                    onPressed: () => Get.to(() => FlipkartSignInScreen()),
                     child: Text(
                       "Login",
                       style: TextStyle(

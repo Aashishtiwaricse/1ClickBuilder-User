@@ -1,20 +1,20 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Modules/Banners/banner.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/Banners/banner.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 
 
 
 class NexusBannerApiService {
   // Use the real base URL used in your project
   static const String baseUrl =
-      "${NexusAppConstant.baseUrl}/banner/banner-list/";
+      "${FlipkartAppConstant.baseUrl}/banner/banner-list/";
 
   /// Instance method that your UI expects to call:
   /// await apiService.getBannerList(vendorId)
   Future<BannerListResponse?> getBannerList(String vendorId) async {
-    final uri = Uri.parse("${NexusAppConstant.baseUrl}${NexusAppConstant.bannerUrl}$vendorId");
+    final uri = Uri.parse("${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.bannerUrl}$vendorId");
 
 
     print("bannerssss${uri} "              );

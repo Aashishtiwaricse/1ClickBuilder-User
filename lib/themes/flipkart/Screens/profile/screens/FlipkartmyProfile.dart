@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import 'package:one_click_builder/themes/Flipkart/Controllers/cart_controller.dart';
-import 'package:one_click_builder/themes/Flipkart/Controllers/guestCartController/guestCart.dart';
 import 'package:one_click_builder/themes/Fuzzy/utility/plugin_list.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/profile/profileController.dart';
-import 'package:shimmer/shimmer.dart';
 
 class FlipkartProfileDashboardScreen extends StatefulWidget {
   const FlipkartProfileDashboardScreen({super.key});

@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/profile/profileController.dart';
-import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/profile/profileController.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/plugin_list.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:http/http.dart' as http;
 

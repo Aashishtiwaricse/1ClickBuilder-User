@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Modules/orders/orderDetails.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/orders/orderDetails.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 
 class ShiprocketOrderApi {
   static Future<ShiprocketOrderResponse> fetchOrderDetails(
@@ -11,7 +11,7 @@ class ShiprocketOrderApi {
     final token = prefs.getString('token') ?? '';
 
     final url =
-        "${NexusAppConstant.baseUrl}/api/shiprocket/get-order-details/$orderId";
+        "${FlipkartAppConstant.baseUrl}/api/shiprocket/get-order-details/$orderId";
 
     print("📦 details order id => $url");
     print("🔐 token length => ${token.length}");

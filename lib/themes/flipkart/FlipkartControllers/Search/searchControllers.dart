@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
 
 
 
-class NexusSearchController extends GetxController {
+class FlipkartSearchController extends GetxController {
   final isLoading = false.obs;
   final products = <dynamic>[].obs;
   final keyword = ''.obs;
@@ -15,7 +15,7 @@ void clearSearch() {
   isLoading.value = false;
 }
 
-  final vendorCtrl = Get.find<NexusVendorController>();
+  final vendorCtrl = Get.find<FlipkartVendorController>();
 
   Future<void> searchProduct(String text) async {
     final query = text.trim();

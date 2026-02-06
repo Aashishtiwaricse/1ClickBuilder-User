@@ -1,25 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:one_click_builder/themes/Flipkart/Modules/BestSellers/bestSellers.dart';
 import 'package:one_click_builder/themes/Flipkart/Screens/Home/NexusProductById/productById.dart';
-class ProductCard extends StatelessWidget {
-  final Product product;
-  final String imageUrl;
 
-  const ProductCard({
-    super.key,
-    required this.product,
-    required this.imageUrl,
-  });
+import '../../../Modules/FlipkartProducts/FlipkartProduct.dart';
+
+
+class ViewAllProductsScreen extends StatelessWidget {
+  final List<ProductData> products;
+
+  const ViewAllProductsScreen({super.key, required this.products});
 
   @override
   Widget build(BuildContext context) {
-    final String firstSizePrice = product.images.isNotEmpty &&
-            product.images.first.sizes.isNotEmpty
-        ? product.images.first.sizes.first.price
-        : product.salePrice.toString();
+    return Scaffold(
+      appBar: AppBar(title: Text("All Products")),
 
-    final double sellingPrice = double.tryParse(firstSizePrice) ?? 0;
-    final double originalPrice = product.price ?? 0;
+      body: GridView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: products.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: MediaQuery.of(context).size.width < 360 ? 0.60: 0.66,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+        ),
+        itemBuilder: (context, index) {
+          final product = products[index].product;
+          return NexusProductCard1(product: product!);
+        },
+      ),
+    );
+  }
+}
+
+
+class NexusProductCard1 extends StatelessWidget {
+  final Product product;
+
+  const NexusProductCard1({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    final image =
+        product.images.isNotEmpty ? product.images.first.image : "";
+
+    final String? firstSizePrice =
+        product.images.isNotEmpty && product.images.first.sizes.isNotEmpty
+            ? product.images.first.sizes.first.price
+            : null;
+
+    final double? sellingPrice =
+        firstSizePrice != null ? double.tryParse(firstSizePrice) : null;
+
+    final double? mrp = product.discountPrice != null
+        ? double.tryParse(product.discountPrice.toString())
+        : null;
 
     return GestureDetector(
       onTap: () {
@@ -39,14 +73,15 @@ class ProductCard extends StatelessWidget {
               color: Colors.black.withOpacity(0.06),
               blurRadius: 10,
               offset: const Offset(0, 4),
-            ),
+            )
           ],
         ),
         padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            /// 🖼 IMAGE (Flipkart style)
+            /// IMAGE
             AspectRatio(
               aspectRatio: 1,
               child: Container(
@@ -55,22 +90,22 @@ class ProductCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(8),
-                child: imageUrl.isEmpty
+                child: image.isEmpty
                     ? const Icon(Icons.image_not_supported, size: 40)
                     : Image.network(
-                        imageUrl,
+                        image,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.image_not_supported),
+                            const Icon(Icons.broken_image_outlined),
                       ),
               ),
             ),
 
             const SizedBox(height: 8),
 
-            /// 🏷 TITLE
+            /// TITLE
             Text(
-              product.title ?? "",
+              product.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -82,20 +117,23 @@ class ProductCard extends StatelessWidget {
 
             const SizedBox(height: 6),
 
-            /// 💰 PRICE ROW (Flipkart style)
+            /// PRICE ROW (Flipkart clean style)
             Row(
               children: [
-                Text(
-                  "₹$firstSizePrice",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                if (originalPrice > sellingPrice)
+                if (firstSizePrice != null)
                   Text(
-                    "₹${originalPrice.toStringAsFixed(0)}",
+                    "₹$firstSizePrice",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                const SizedBox(width: 6),
+                if (mrp != null &&
+                    sellingPrice != null &&
+                    mrp > sellingPrice)
+                  Text(
+                    "₹${mrp.toStringAsFixed(0)}",
                     style: const TextStyle(
                       fontSize: 11,
                       color: Colors.grey,
@@ -107,9 +145,10 @@ class ProductCard extends StatelessWidget {
 
             const SizedBox(height: 4),
 
-            /// ✅ ASSURED TAG (optional but Flipkart-ish)
+            /// ASSURED TAG (optional Flipkart feel)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: const Color(0xFFEAF1FF),
                 borderRadius: BorderRadius.circular(6),

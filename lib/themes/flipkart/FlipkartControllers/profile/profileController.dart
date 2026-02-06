@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/orders/NexusOrders.dart';
-import 'package:one_click_builder/themes/Nexus/api/NexusOrder/orderResponse.dart';
-import 'package:get/get.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/orders/NexusOrders.dart';
+import 'package:one_click_builder/themes/Flipkart/api/FlipkartOrder/orderResponse.dart';
 
 class ProfileOrdersController extends GetxController {
   /// Orders list

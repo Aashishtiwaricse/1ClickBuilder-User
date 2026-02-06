@@ -1,10 +1,8 @@
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Nexus-Sub-Category/Nexus-sub-Category.dart';
-import 'package:one_click_builder/themes/Nexus/api/SubCategory/nexusGetSubCategory.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/Nexus-Sub-Category/Flipkart-sub-Category.dart';
+import 'package:one_click_builder/themes/Flipkart/api/SubCategory/FlipkartGetSubCategory.dart';
 
-import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Nexus-Sub-Category/Nexus-sub-Category.dart';
-import 'package:one_click_builder/themes/Nexus/api/SubCategory/nexusGetSubCategory.dart';
+
 
 class ProductController extends GetxController {
   final ProductApiService apiService = ProductApiService();

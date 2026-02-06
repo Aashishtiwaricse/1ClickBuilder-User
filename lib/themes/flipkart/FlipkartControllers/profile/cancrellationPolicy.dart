@@ -1,12 +1,11 @@
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/profile/Nexus%20CancellationPolicy.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/api/profile/cancellationPolicy.dart';
-import 'package:get/get.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/profile/Nexus%20CancellationPolicy.dart';
+import 'package:one_click_builder/themes/Flipkart/api/profile/cancellationPolicy.dart';
 
 
 class CancellationPolicyController extends GetxController {
-  final NexusVendorController vendorController = Get.find();
+  final FlipkartVendorController vendorController = Get.find();
 
   var isLoading = true.obs;
   var policy = Rxn<CancellationPolicyData>();

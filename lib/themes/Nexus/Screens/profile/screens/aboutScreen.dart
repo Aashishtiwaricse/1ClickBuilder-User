@@ -102,6 +102,26 @@ class _NexusAboutScreenState extends State<NexusAboutScreen> {
     ),
   },
 ),
+const SizedBox(height: 24),
+
+const Text(
+  "Delivery Information",
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  ),
+),
+const SizedBox(height: 8),
+const Text(
+  "1Clickbuilder User app supports delivery across all serviceable pincodes in India. "
+  "Delivery availability may vary depending on the product and customer location. "
+  "Users can check delivery availability during checkout.",
+  style: TextStyle(
+    fontSize: 15,
+    height: 1.5,
+  ),
+),
+
 
                       const SizedBox(height: 16),
                     

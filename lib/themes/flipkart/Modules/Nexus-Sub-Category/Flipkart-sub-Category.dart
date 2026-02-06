@@ -1,20 +1,43 @@
 import 'dart:convert';
 
-
-
-
-
-import 'dart:convert';
-
-/// ================= HELPER =================
-List<T> parseList<T>(
+/// ================= GENERIC LIST PARSER =================
+List<T>? parseList<T>(
   dynamic value,
   T Function(Map<String, dynamic>) fromJson,
 ) {
-  if (value is List) return value.map((e) => fromJson(e)).toList();
-  if (value is Map<String, dynamic>) return [fromJson(value)];
-  return [];
+  if (value == null) return null;
+
+  if (value is List) {
+    return value
+        .whereType<Map<String, dynamic>>()
+        .map(fromJson)
+        .toList();
+  }
+
+  if (value is Map<String, dynamic>) {
+    return [fromJson(value)];
+  }
+
+  return null;
 }
+List<String>? parseStringList(dynamic value) {
+  if (value == null) return null;
+
+  if (value is String) {
+    try {
+      return List<String>.from(jsonDecode(value));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  if (value is List) {
+    return value.map((e) => e.toString()).toList();
+  }
+
+  return null;
+}
+
 
 /// ================= RESPONSE =================
 ProductResponse productResponseFromJson(String str) =>
@@ -23,21 +46,30 @@ ProductResponse productResponseFromJson(String str) =>
 class ProductResponse {
   final Meta? meta;
   final dynamic error;
-  final List<ProductData>? data;
+  final List<ProductData> data;
 
-  ProductResponse({this.meta, this.error, this.data});
+  ProductResponse({
+    this.meta,
+    this.error,
+    required this.data,
+  });
 
-  factory ProductResponse.fromJson(Map<String, dynamic> json) =>
-      ProductResponse(
-        meta: json["meta"] != null ? Meta.fromJson(json["meta"]) : null,
-        error: json["error"],
-        data: json["data"] is List
-            ? List<ProductData>.from(
-                json["data"].map((x) => ProductData.fromJson(x)),
-              )
-            : [],
-      );
+  factory ProductResponse.fromJson(Map<String, dynamic> json) {
+    final dataNode = json["data"];
+
+    return ProductResponse(
+      meta: json["meta"] != null ? Meta.fromJson(json["meta"]) : null,
+      error: json["error"],
+      data: dataNode is Map && dataNode["product"] is List
+          ? List<ProductData>.from(
+              dataNode["product"]
+                  .map((x) => ProductData.fromJson(x)),
+            )
+          : [],
+    );
+  }
 }
+
 
 /// ================= META =================
 class Meta {
@@ -66,27 +98,34 @@ class ProductData {
     this.resalerAddress,
   });
 
-  factory ProductData.fromJson(Map<String, dynamic> json) => ProductData(
-        product:
-            json["product"] != null ? Product.fromJson(json["product"]) : null,
+factory ProductData.fromJson(Map<String, dynamic> json) => ProductData(
+      /// product is always an object
+      product: json["product"] is Map<String, dynamic>
+          ? Product.fromJson(json["product"])
+          : null,
 
-        shipping_details: parseList(
-          json["shipping_details"],
-          (e) => ShippingDetail.fromJson(e),
-        ),
+      /// Can be List | Map | null
+      shipping_details: parseList(
+        json["shipping_details"],
+        (e) => ShippingDetail.fromJson(e),
+      ),
 
-        reviews: json["reviews"] is List ? json["reviews"] : [],
+      /// Sometimes null / missing
+      reviews: json["reviews"] is List ? json["reviews"] : const [],
 
-        wholesalerAddress: parseList(
-          json["wholesalerAddress"],
-          (e) => WholesalerAddress.fromJson(e),
-        ),
+      /// API returns Map OR List
+      wholesalerAddress: parseList(
+        json["wholesalerAddress"],
+        (e) => WholesalerAddress.fromJson(e),
+      ),
 
-        resalerAddress: parseList(
-          json["resalerAddress"],
-          (e) => ResalerAddress.fromJson(e),
-        ),
-      );
+      /// Same here
+      resalerAddress: parseList(
+        json["resalerAddress"],
+        (e) => ResalerAddress.fromJson(e),
+      ),
+    );
+
 }
 
 /// ================= PRODUCT =================
@@ -396,26 +435,15 @@ class WholesalerAddress {
     this.originPostalCode,
   });
 
-  factory WholesalerAddress.fromJson(Map<String, dynamic> json) =>
-      WholesalerAddress(
-        userId: json["userId"]?.toString(),
+factory WholesalerAddress.fromJson(Map<String, dynamic> json) =>
+    WholesalerAddress(
+      userId: json["userId"]?.toString(),
+      originCountry: parseStringList(json["originCountry"]),
+      originState: parseStringList(json["originState"]),
+      originCity: parseStringList(json["originCity"]),
+      originPostalCode: parseStringList(json["originPostalCode"]),
+    );
 
-        originCountry: json["originCountry"] != null
-            ? List<String>.from(jsonDecode(json["originCountry"]))
-            : null,
-
-        originState: json["originState"] != null
-            ? List<String>.from(jsonDecode(json["originState"]))
-            : null,
-
-        originCity: json["originCity"] != null
-            ? List<String>.from(jsonDecode(json["originCity"]))
-            : null,
-
-        originPostalCode: json["originPostalCode"] != null
-            ? List<String>.from(jsonDecode(json["originPostalCode"]))
-            : null,
-      );
 }
 
 /// ================= RESALER =================

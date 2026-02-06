@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/profile/screens/ContactUsScreen.dart';
 import 'package:one_click_builder/themes/Flipkart/Screens/profile/screens/FlipkartmyProfile.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/ContactUsScreen.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/OrdersReturnsScreen.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/aboutScreen.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/camcellationPolicy.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/profile/screens/myProfile.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/profile/screens/OrdersReturnsScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/profile/screens/aboutScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/profile/screens/camcellationPolicy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
 import 'package:shimmer/shimmer.dart';
 
 class FlipkartProfileScreen extends StatefulWidget {
@@ -59,7 +58,7 @@ class _FlipkartProfileScreenState extends State<FlipkartProfileScreen> {
     // Navigate to Sign In screen
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => NexusSignInScreen()),
+      MaterialPageRoute(builder: (_) => FlipkartSignInScreen()),
       (route) => false,
     );
   }
@@ -81,7 +80,7 @@ class _FlipkartProfileScreenState extends State<FlipkartProfileScreen> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => NexusSignInScreen()),
+                MaterialPageRoute(builder: (_) => FlipkartSignInScreen()),
               );
             },
             child: const Text("Login"),
@@ -361,7 +360,7 @@ class _FlipkartProfileScreenState extends State<FlipkartProfileScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => NexusSignInScreen(),
+                      builder: (_) => FlipkartSignInScreen(),
                     ),
                   );
                 },

@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:one_click_builder/themes/Flipkart/Modules/BestSellers/bestSellers.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/FlipkartProducts/FlipkartProduct.dart';
 import 'package:one_click_builder/themes/Flipkart/Screens/Home/NexusProductById/productById.dart';
-class ProductCard extends StatelessWidget {
-  final Product product;
-  final String imageUrl;
 
-  const ProductCard({
-    super.key,
-    required this.product,
-    required this.imageUrl,
-  });
+
+class Flipkartproductcard extends StatelessWidget {
+  final Product product;
+
+  const Flipkartproductcard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
-    final String firstSizePrice = product.images.isNotEmpty &&
-            product.images.first.sizes.isNotEmpty
-        ? product.images.first.sizes.first.price
-        : product.salePrice.toString();
+    final image =
+        product.images.isNotEmpty ? product.images.first.image : "";
 
-    final double sellingPrice = double.tryParse(firstSizePrice) ?? 0;
-    final double originalPrice = product.price ?? 0;
+    final String? price =
+        product.images.isNotEmpty && product.images.first.sizes.isNotEmpty
+            ? product.images.first.sizes.first.price
+            : null;
 
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
       onTap: () {
         Navigator.push(
           context,
@@ -45,32 +43,31 @@ class ProductCard extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            /// 🖼 IMAGE (Flipkart style)
+            /// IMAGE
             AspectRatio(
               aspectRatio: 1,
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF4F6FA),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                padding: const EdgeInsets.all(8),
-                child: imageUrl.isEmpty
-                    ? const Icon(Icons.image_not_supported, size: 40)
+                padding: const EdgeInsets.all(10),
+                child: image.isEmpty
+                    ? const Icon(Icons.image_not_supported)
                     : Image.network(
-                        imageUrl,
+                        image,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.image_not_supported),
                       ),
               ),
             ),
 
             const SizedBox(height: 8),
 
-            /// 🏷 TITLE
+            /// TITLE
             Text(
-              product.title ?? "",
+              product.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -82,20 +79,21 @@ class ProductCard extends StatelessWidget {
 
             const SizedBox(height: 6),
 
-            /// 💰 PRICE ROW (Flipkart style)
+            /// PRICE ROW
             Row(
               children: [
-                Text(
-                  "₹$firstSizePrice",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                if (originalPrice > sellingPrice)
+                if (price != null)
                   Text(
-                    "₹${originalPrice.toStringAsFixed(0)}",
+                    "₹$price",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                const SizedBox(width: 6),
+                if (product.discountPrice != null)
+                  Text(
+                    "₹${product.discountPrice!.toStringAsFixed(0)}",
                     style: const TextStyle(
                       fontSize: 11,
                       color: Colors.grey,
@@ -107,11 +105,11 @@ class ProductCard extends StatelessWidget {
 
             const SizedBox(height: 4),
 
-            /// ✅ ASSURED TAG (optional but Flipkart-ish)
+            /// ASSURED / OFFER BADGE (optional)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF1FF),
+                color: const Color(0xFFE3F2FD),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: const Text(
@@ -119,7 +117,7 @@ class ProductCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2874F0),
+                  color: Color(0xFF1976D2),
                 ),
               ),
             ),
@@ -129,3 +127,4 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
+   

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class NexusAuthService {
+class FlipkartAuthService {
   Future<bool> login(String input, String password) async {
     print("${input}.   ${password}");
     try {
@@ -15,7 +15,7 @@ class NexusAuthService {
       print("📤 Request Body: $body");
 
       final response = await http.post(
-        Uri.parse("${NexusAppConstant.baseUrl}${NexusAppConstant.loginUrl}"),
+        Uri.parse("${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.loginUrl}"),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );

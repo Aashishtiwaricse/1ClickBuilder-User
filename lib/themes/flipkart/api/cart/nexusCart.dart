@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CartService {
   static const String _baseUrl =
-      '${NexusAppConstant.baseUrl}${NexusAppConstant.catUrl}';
+      '${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.catUrl}';
 
   /// 🔹 FETCH CART BY VENDOR ID
   static Future<CartResponse> fetchCart(String vendorId) async {

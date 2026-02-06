@@ -5,7 +5,7 @@ import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
 
 
-class CategoryUIController extends GetxController {
+class FlipkartCategoryUIController extends GetxController {
   final RxInt selectedIndex = 0.obs;
 
   final RxString selectedSubCategoryId = "".obs;

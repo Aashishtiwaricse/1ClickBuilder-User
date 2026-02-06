@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 ThemeData nexusTheme() {
   return ThemeData(
     // 🌸 Soft pink background (from splash)
-    scaffoldBackgroundColor: const Color(0xFFFFF3F6),
+    scaffoldBackgroundColor: Colors.white,
 
     colorScheme: const ColorScheme.light(
       // 🎀 Primary: elegant peach-pink (saree tone)
@@ -77,7 +77,7 @@ ThemeData nexusTheme() {
     // 🟡 Secondary / Outline Button
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFFC24A6A),
+        foregroundColor: const Color(0xFF2874F0),
         side: const BorderSide(color: Color(0xFFC24A6A)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),

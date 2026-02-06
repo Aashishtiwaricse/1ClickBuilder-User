@@ -7,18 +7,17 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/cart_controller.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/guestCartController/guestCart.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/ProductById/nexusProductById.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Cart/NexusCart.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
-import 'package:one_click_builder/themes/Nexus/api/ProductById/productById.dart';
-import 'package:one_click_builder/themes/Nexus/api/cart/nexusAddtoCart.dart'
-    as api;
-import 'package:one_click_builder/themes/Nexus/api/cart/nexusAddtoCart.dart'
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/cart_controller.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/guestCartController/guestCart.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/ProductById/flipkartProductById.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Cart/flipkartCart.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/api/ProductById/productById.dart';
+import 'package:one_click_builder/themes/Flipkart/api/cart/nexusAddtoCart.dart'
     as cartApi;
-import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/plugin_list.dart';
+
 import 'package:shimmer/shimmer.dart';
 import 'dart:io';
 
@@ -245,7 +244,7 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
             return Padding(
               padding: const EdgeInsets.only(right: 12),
               child: GestureDetector(
-                onTap: () => Get.to(() => const CartScreen()),
+                onTap: () => Get.to(() => const FlipkartCartScreen()),
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -354,8 +353,11 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
 
             // Fallback: show first image from product images list (shouldn't usually happen)
             SizedBox(
-              height: 450,
-              child: Center(
+              height: 360, // 👈 Flipkart doesn’t go too tall
+              width: double.infinity,
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(12),
                 child: Image.network(
                   product!.images!.first.image!,
                   fit: BoxFit.contain,
@@ -364,13 +366,84 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
             ),
 
           const SizedBox(height: 16),
+          // SIZE SELECTOR
+          if (hasSizes) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text("Select Size",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: List.generate(sizeList.length, (i) {
+                  final size = sizeList[i];
+                  final selected = i == selectedSizeIndex;
+
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedSizeIndex = i),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: selected
+                              ? const Color(0xFF2874F0)
+                              : Colors.grey.shade400,
+                          width: selected ? 2 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        size.size ?? "",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: selected
+                              ? const Color(0xFF2874F0)
+                              : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text("Select Size",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "No size options available",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 8),
 
           // TITLE
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               product!.title ?? "",
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
             ),
           ),
 
@@ -386,46 +459,40 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 // Selling Price
-                Text(
-                  "₹$sellingPrice",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // Original Price (strikethrough)
-                if (originalPrice > sellingPrice)
-                  Text(
-                    "₹$originalPrice",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                      decoration: TextDecoration.lineThrough,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "₹$sellingPrice",
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-
-                const SizedBox(width: 8),
-
-                // Discount with arrow
-                if (discountPercent > 0)
-                  Row(
-                    children: [
-                      const Icon(Icons.arrow_downward,
-                          size: 16, color: Colors.green),
+                    const SizedBox(width: 8),
+                    if (originalPrice > sellingPrice)
                       Text(
-                        " $discountPercent% OFF",
+                        "₹$originalPrice",
                         style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.grey,
+                          decoration: TextDecoration.lineThrough,
                         ),
                       ),
-                    ],
-                  ),
+                    const SizedBox(width: 8),
+                    if (discountPercent > 0)
+                      Text(
+                        "$discountPercent% off",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green,
+                        ),
+                      ),
+                  ],
+                ),
+
+                // Discount with arrow
               ],
             ),
           ),
@@ -458,12 +525,14 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
                       });
                     },
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      padding: const EdgeInsets.all(6),
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: selected ? Colors.blue : Colors.grey.shade300,
+                          color: selected
+                              ? const Color(0xFF2874F0)
+                              : Colors.grey.shade300,
                           width: selected ? 2 : 1,
                         ),
                       ),
@@ -487,56 +556,6 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
               ),
             ),
 
-          // SIZE SELECTOR
-          if (hasSizes) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text("Select Size",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: List.generate(sizeList.length, (i) {
-                  final size = sizeList[i];
-                  final selected = i == selectedSizeIndex;
-                  return GestureDetector(
-                    onTap: () => setState(() => selectedSizeIndex = i),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selected ? Colors.black : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(size.size ?? "",
-                          style: TextStyle(
-                              color: selected ? Colors.white : Colors.black)),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ] else ...[
-            const SizedBox(height: 12),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text("Select Size",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
-            const SizedBox(height: 12),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                "No size options available",
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          ],
-
           const SizedBox(height: 28),
 
           // ADD TO CART BUTTON (bottom)
@@ -546,41 +565,38 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Product Details",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Html(
-                      data: product!.description!,
-                      style: {
-                        "body": Style(
-                          margin: Margins.zero,
-                          padding: HtmlPaddings.zero,
-                          fontSize: FontSize(14),
-                          lineHeight: LineHeight.number(1.6),
-                          color: Colors.black87,
-                        ),
-                        "p": Style(
-                          margin: Margins.only(bottom: 8),
-                        ),
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              child:Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: const Color(0xffF8F8F8),
+    borderRadius: BorderRadius.circular(8),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Product Details",
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Html(
+        data: product!.description!,
+        style: {
+          "body": Style(
+            fontSize: FontSize(14),
+            lineHeight: LineHeight.number(1.6),
+            color: Colors.black87,
+          ),
+        },
+      ),
+    ],
+  ),
+),
+
             ),
           ],
 
@@ -591,95 +607,110 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
     );
   }
 
-  Widget _buildBottomBar(String price) {
-    final theme = Theme.of(context); // ✅ FIXED
-
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // GO TO CART
-            Expanded(
-              child: OutlinedButton(
-                onPressed: isAddToCartLoading
-                    ? null
-                    : () async {
-                        await _onAddToCartPressed(isBuyNow: false);
-                      },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: const BorderSide(color: Colors.black),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+Widget _buildBottomBar(String price) {
+  return SafeArea(
+    child: Container(
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 6,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // 🟡 ADD TO CART (Flipkart Yellow)
+          Expanded(
+            child: InkWell(
+              onTap: isAddToCartLoading
+                  ? null
+                  : () async {
+                      await _onAddToCartPressed(isBuyNow: false);
+                    },
+              child: Container(
+                color: const Color(0xFFFFC200),
+                alignment: Alignment.center,
                 child: isAddToCartLoading
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text(
-                        "Add to cart",
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            // BUY NOW
-            Expanded(
-              child: ElevatedButton(
-                onPressed: isBuyNowLoading
-                    ? null
-                    : () async {
-                        final added = await _onAddToCartPressed(isBuyNow: true);
-                        if (added) {
-                          Get.to(() => const CartScreen());
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: Color(0xfff3c0e6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: isBuyNowLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 22,
+                        width: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.black,
                         ),
                       )
-                    : Text(
-                        "Buy now ₹$price",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                    : const Text(
+                        "ADD TO CART",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
                         ),
                       ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // 🟠 BUY NOW (Flipkart Orange)
+          Expanded(
+            child: InkWell(
+              onTap: isBuyNowLoading
+                  ? null
+                  : () async {
+                      final added =
+                          await _onAddToCartPressed(isBuyNow: true);
+                      if (added) {
+                        Get.to(() => const FlipkartCartScreen());
+                      }
+                    },
+              child: Container(
+                color: const Color(0xFFFF9F00),
+                alignment: Alignment.center,
+                child: isBuyNowLoading
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
+                      )
+                    : RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: "BUY NOW\n",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                              ),
+                            ),
+                            TextSpan(
+                              text: "₹$price",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   // ---------- HELPERS & SMALL ANIMATIONS ----------
 
@@ -891,7 +922,7 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => NexusSignInScreen()),
+                MaterialPageRoute(builder: (_) => FlipkartSignInScreen()),
               );
             },
             child: const Text("Login"),
@@ -999,7 +1030,7 @@ class _ProductByIdScreenState extends State<ProductByIdScreen>
 
       final prefs = await SharedPreferences.getInstance();
       final guestId = prefs.getString("guestId") ?? "";
-      final vendorCtrl = Get.find<NexusVendorController>();
+      final vendorCtrl = Get.find<FlipkartVendorController>();
       final vendorId = vendorCtrl.vendorId.value;
 
       if (guestId.isEmpty) {

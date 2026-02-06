@@ -1,15 +1,14 @@
 
 import 'package:dio/dio.dart';
 import 'package:one_click_builder/themes/Flipkart/Modules/Categories/category.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Categories/category.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 
 
 class FlipkartCategoryApiService {
   final Dio _dio = Dio();
 
   Future<FlipkartCategoryResponse?> fetchCategories(String vendorId) async {
-    final url = "${NexusAppConstant.baseUrl}${NexusAppConstant.fetchCategories}$vendorId";
+    final url = "${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.fetchCategories}$vendorId";
     print("📌 Fetching categories from: $url");
 
     try {

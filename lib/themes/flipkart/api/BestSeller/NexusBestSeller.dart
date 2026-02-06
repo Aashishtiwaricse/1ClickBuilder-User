@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Modules/BestSellers/bestSellers.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/BestSellers/bestSellers.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 
 class BestSellerService {
   Future<BestSellerResponse?> getBestSellerProducts(String vendorId) async {
     try {
       final url =
-          "${NexusAppConstant.baseUrl}${NexusAppConstant.bestSellingProduct}$vendorId";
+          "${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.bestSellingProduct}$vendorId";
 
 
           print("BestSeller ${url}");

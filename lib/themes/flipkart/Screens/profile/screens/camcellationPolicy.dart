@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/profile/Nexus%20CancellationPolicy.dart';
+import 'package:one_click_builder/themes/Flipkart/api/profile/cancellationPolicy.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/profile/Nexus CancellationPolicy.dart';
-import 'package:one_click_builder/themes/Nexus/api/profile/cancellationPolicy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 

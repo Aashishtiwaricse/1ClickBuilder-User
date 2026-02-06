@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/Category/CategoryUIController.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/product/productController.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Categories/category.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Nexus-Sub-Category/Nexus-sub-Category.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/NexusProductById/productById.dart';
-import 'package:one_click_builder/themes/Nexus/api/Categoryalist/categoryList.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/Category/CategoryUIController.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/cart_controller.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/guestCartController/guestCart.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/product/productController.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/Categories/category.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/Nexus-Sub-Category/Flipkart-sub-Category.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Cart/flipkartCart.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/NexusProductById/productById.dart';
+import 'package:one_click_builder/themes/Flipkart/api/Categoryalist/categoryList.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/plugin_list.dart';
+
 import 'package:shimmer/shimmer.dart';
 
 class AllCategoriesScreen extends StatefulWidget {
@@ -17,19 +22,27 @@ class AllCategoriesScreen extends StatefulWidget {
 }
 
 class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
-  final NexusCategoryApiService apiService = NexusCategoryApiService();
+  final FlipkartCategoryApiService apiService = FlipkartCategoryApiService();
 
-  NexusCategoryResponse? categoryResponse;
+  FlipkartCategoryResponse? categoryResponse;
   bool loading = true;
+  String searchKeyword = ""; // ✅ NEW
 
-  final CategoryUIController categoryCtrl = Get.find<CategoryUIController>();
+  final FlipkartCategoryUIController categoryCtrl =
+      Get.find<FlipkartCategoryUIController>();
 
-  final NexusVendorController vendorController =
-      Get.find<NexusVendorController>();
+  final FlipkartVendorController vendorController =
+      Get.find<FlipkartVendorController>();
 
   final ProductController productCtrl = Get.put(ProductController());
+  bool isSearchResult = false;
 
   late Worker _vendorWorker;
+  bool isSearching = false;
+  final TextEditingController searchTextCtrl = TextEditingController();
+  final CartController cartController = Get.find<CartController>();
+  final GuestCartController guestCartController =
+      Get.find<GuestCartController>();
 
   @override
   void initState() {
@@ -50,12 +63,6 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     );
   }
 
-  Color _hexToColor(String hex) {
-    hex = hex.replaceAll("#", "");
-    if (hex.length == 6) hex = "FF$hex";
-    return Color(int.parse("0x$hex"));
-  }
-
   Future<void> loadCategories(String vendorId) async {
     setState(() => loading = true);
 
@@ -69,7 +76,6 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
         loading = false;
       });
 
-      /// ✅ AUTO LOAD FIRST CATEGORY PRODUCTS
       if (res?.data?.categories?.isNotEmpty == true) {
         final first = res!.data!.categories!.first;
         categoryCtrl.select(0);
@@ -94,37 +100,185 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF6F6F6),
+      backgroundColor: Colors.white,
+      // ================= APP BAR =================
       appBar: AppBar(
-        title: const Text("All Categories"),
         backgroundColor: Colors.white,
         elevation: 0,
-      ),
-      body: loading
-          ? Center(
-              child: Shimmer.fromColors(
-                baseColor: Colors.grey.shade300,
-                highlightColor: Colors.grey.shade100,
-                child: Container(
-                  width: 120,
-                  height: 20,
-                  color: Colors.white,
+        centerTitle: false, // ✅ important
+        titleSpacing: 16,
+
+        /// ⬅️ LEFT TITLE
+        title: isSearching
+            ? _searchBar()
+            : isSearchResult
+                ? Text(
+                    'Results for "$searchKeyword"',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  )
+                : const Text(
+                    "All Categories",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+
+        /// ➡️ RIGHT ICONS
+        actions: [
+          /// 🔍 SEARCH ICON
+          IconButton(
+            icon: Icon(
+              isSearching ? Icons.close : Icons.search,
+              color: Colors.black,
+              size: 24,
+            ),
+            onPressed: () {
+              setState(() {
+                if (isSearching) {
+                  isSearching = false;
+                  isSearchResult = false;
+                  searchKeyword = "";
+                  searchTextCtrl.clear();
+
+                  final index = categoryCtrl.selectedIndex.value;
+                  final categories = categoryResponse?.data?.categories ?? [];
+                  if (categories.isNotEmpty && index < categories.length) {
+                    productCtrl.loadProducts(
+                      vendorId: vendorController.vendorId.value,
+                      search: categories[index].name.toString(),
+                    );
+                  }
+                } else {
+                  isSearching = true;
+                }
+              });
+            },
+          ),
+
+          /// 🛒 CART ICON WITH COUNT
+          Obx(() {
+            final prefs = Get.find<SharedPreferences>();
+            final token = prefs.getString("token");
+
+            final count = token != null
+                ? cartController.cartCount.value
+                : guestCartController.guestCartCount.value;
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => Get.to(() => const FlipkartCartScreen()),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(
+                      Icons.shopping_cart_outlined,
+                      color: Colors.black,
+                      size: 26,
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            count.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            )
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                return Row(
-                  children: [
-                    _leftCategoryList(),
-                    SizedBox(
-                      width: constraints.maxWidth - 95,
-                      child: _rightProductGrid(),
-                    ),
-                  ],
+            );
+          }),
+        ],
+      ),
+
+      body: loading
+          ? _shimmerLoader()
+          : isSearchResult
+
+              /// 🔍 SEARCH RESULT VIEW (NO CATEGORY)
+              ? _rightCategoryGrid()
+
+              /// 📂 CATEGORY VIEW
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Row(
+                      children: [
+                        _leftCategoryList(),
+                        SizedBox(
+                          width: constraints.maxWidth - 95,
+                          child: _rightCategoryGrid(),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+    );
+  }
+
+  // ================= SEARCH BAR =================
+  Widget _searchBar() {
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4FAFF),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFF3FA9F5), width: 1.5),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, size: 22, color: Color(0xFF6B6B6B)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: searchTextCtrl,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (value) {
+                if (value.trim().isEmpty) return;
+
+                searchKeyword = value; // ✅ SAVE KEYWORD
+
+                productCtrl.loadProducts(
+                  vendorId: vendorController.vendorId.value,
+                  search: value,
                 );
+
+                setState(() {
+                  isSearching = false;
+                  isSearchResult = true;
+                });
+
+                searchTextCtrl.clear();
               },
+              decoration: const InputDecoration(
+                hintText: "Search products",
+                border: InputBorder.none,
+                isDense: true,
+              ),
             ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -147,8 +301,10 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
 
             return InkWell(
               onTap: () {
+                setState(() {
+                  isSearchResult = false; // ✅ RESTORE CATEGORY VIEW
+                });
                 categoryCtrl.select(index);
-
                 productCtrl.loadProducts(
                   vendorId: vendorController.vendorId.value,
                   search: cat.name.toString(),
@@ -157,7 +313,7 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xffF1F5FF) : Colors.white,
+                  color: isSelected ? Colors.white : const Color(0xffF1F5FF),
                   border: Border(
                     left: BorderSide(
                       color: isSelected ? Colors.blue : Colors.transparent,
@@ -166,27 +322,22 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
                   ),
                 ),
                 child: Column(
-                  //   crossAxisAlignment: ,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                          8), // optional: remove if you want sharp edges
-                      child: SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: Image.network(
-                          cat.imageUrl ?? "",
-                          fit: BoxFit.cover, // 🔥 important
-                          errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.category),
-                        ),
+                    SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: Image.network(
+                        cat.imageUrl ?? "",
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.category),
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       cat.name ?? "",
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis, // shows ...
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 11,
@@ -205,43 +356,31 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     );
   }
 
-  // // -------------------------------------------------
-  // // RIGHT PRODUCT GRID
-  // // -------------------------------------------------
-  Widget _rightProductGrid() {
-    final width = MediaQuery.of(context).size.width;
-
+  // -------------------------------------------------
+  // RIGHT CATEGORY GRID (MATCHES IMAGE)
+  // -------------------------------------------------
+  Widget _rightCategoryGrid() {
     return Obx(() {
       if (productCtrl.loading.value) {
-        return Center(
-          child: Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: Container(
-              width: 120,
-              height: 20,
-              color: Colors.white,
-            ),
-          ),
-        );
+        return _shimmerLoader();
       }
 
       if (productCtrl.products.isEmpty) {
-        return const Center(child: Text("No products found"));
+        return const Center(child: Text("No items found"));
       }
 
       return Padding(
         padding: const EdgeInsets.all(12),
         child: GridView.builder(
           itemCount: productCtrl.products.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 24,
-            crossAxisSpacing: 12,
-            childAspectRatio: width < 360 ? 0.39 : 0.45,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 20,
+            crossAxisSpacing: 6,
+            childAspectRatio: 0.67,
           ),
           itemBuilder: (context, index) {
-            return _buildProductCard(
+            return _buildCategoryTile(
               context,
               productCtrl.products[index],
             );
@@ -251,45 +390,18 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
     });
   }
 
-  Widget _buildProductCard(BuildContext context, ProductData item) {
+  // -------------------------------------------------
+  // CATEGORY TILE (EXACT UI MATCH)
+  // -------------------------------------------------
+  Widget _buildCategoryTile(BuildContext context, ProductData item) {
     final product = item.product;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    SizedBox(
-      height: (screenHeight * 0.055).clamp(30.0, 52.0),
-    );
 
     final String title =
-        product?.title?.isNotEmpty == true ? product!.title! : "No Title";
+        product?.title?.isNotEmpty == true ? product!.title! : "";
 
     final String imageUrl = product?.images?.isNotEmpty == true
         ? product!.images!.first.image ?? ""
         : "";
-
-    // -------------------------------
-// 1️⃣ SELLING PRICE FROM images[0].sizes[0].price
-    double sellingPrice = 0;
-
-    if (product?.images != null &&
-        product!.images!.isNotEmpty &&
-        product.images!.first.sizes != null &&
-        product.images!.first.sizes!.isNotEmpty) {
-      sellingPrice = double.tryParse(
-            product.images!.first.sizes!.first.price ?? "0",
-          ) ??
-          0.0;
-    }
-
-// 2️⃣ MRP / CUT PRICE FROM API discountPrice
-    double mrp = (product!.discountPrice ?? 0).toDouble();
-
-// 3️⃣ DISCOUNT PERCENT
-    int discountPercent = 0;
-
-    if (mrp > sellingPrice && mrp > 0) {
-      discountPercent = (((mrp - sellingPrice) / mrp) * 100).round();
-    }
 
     return GestureDetector(
       onTap: () {
@@ -302,151 +414,62 @@ class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
           ),
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
+      child: Column(
+        // mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+
+        children: [
+          Container(
+            height: 96,
+            width: 96,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF2F6FF), // light bluish bg
+              borderRadius: BorderRadius.circular(22),
+            ),
+            alignment: Alignment.center,
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    height: 60,
+                    width: 60,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.image, color: Colors.grey),
+                  )
+                : const Icon(Icons.image, color: Colors.grey),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            //width: 96,
+            child: Text(
+              title,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // -------------------------------------------------
+  // SHIMMER
+  // -------------------------------------------------
+  Widget _shimmerLoader() {
+    return Center(
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Container(
+          width: 120,
+          height: 20,
           color: Colors.white,
-          boxShadow: const [
-            BoxShadow(color: Colors.black12, blurRadius: 4),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// IMAGE (ratio based → mobile safe)
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(14)),
-              child: AspectRatio(
-                aspectRatio: 1 / 1.15, // controls height
-                child: Container(
-                  color: Colors.grey.shade200,
-                  child: imageUrl.isNotEmpty
-                      ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Center(
-                            child:
-                                Icon(Icons.image, size: 40, color: Colors.grey),
-                          ),
-                        )
-                      : const Center(
-                          child:
-                              Icon(Icons.image, size: 40, color: Colors.grey),
-                        ),
-                ),
-              ),
-            ),
-
-            /// TITLE
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-            ),
-
-            /// PRICE ROW (Wrap = no overflow)
-            /// PRICE SECTION (FIXED – NO WRAP)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// SELLING PRICE
-                  ///
-                  Text(
-                    "₹$sellingPrice",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  /// MRP + DISCOUNT
-                  ///
-                  if (discountPercent > 0)
-                    Row(
-                      children: [
-                        Text(
-                          "₹$mrp",
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        if (discountPercent > 0)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.arrow_downward,
-                                size: 12,
-                                color: Colors.green,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                "$discountPercent%",
-                                style: const TextStyle(
-                                    color: Colors.green, fontSize: 10),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-
-            /// BUY BUTTON (fixed height)
-            const Spacer(),
-
-            /// ✅ BUY BUTTON (guaranteed visible)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                height: (screenWidth * 0.11).clamp(34.0, 40.0),
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFC1E3),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (product?.id == null) return;
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProductByIdScreen(
-                            productId: product!.id.toString()),
-                      ),
-                    );
-                  },
-                  child: Center(
-                    child: const Text(
-                      "BUY NOW",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          ],
         ),
       ),
     );

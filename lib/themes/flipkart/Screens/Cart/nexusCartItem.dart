@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/cart_controller.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Cart/nexusCart.dart';
+
 
 // class CartItemTile extends StatelessWidget {
 //   final CartItem item;

@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Modules/orders/NexusOrders.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/orders/NexusOrders.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderApi {
-  static String baseUrl = "${NexusAppConstant.baseUrl}/api/order";
+  static String baseUrl = "${FlipkartAppConstant.baseUrl}/api/order";
 
   static Future<OrderApiResponse> fetchOrders() async {
     try {
@@ -20,7 +20,7 @@ class OrderApi {
         throw Exception("Auth token not found");
       }
 
-      final vendorController = Get.find<NexusVendorController>();
+      final vendorController = Get.find<FlipkartVendorController>();
       final vendorId = vendorController.vendorId.value;
 
       if (vendorId.isEmpty) {

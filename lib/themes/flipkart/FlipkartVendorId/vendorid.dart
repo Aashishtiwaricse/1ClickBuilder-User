@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/plugin_list.dart';
 
 class FlipkartVendorController extends GetxController {
   /// Vendor ID

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Modules/profile/aboutUs.dart';
-import 'package:one_click_builder/themes/Nexus/utility/plugin_list.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/profile/aboutUs.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/plugin_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AboutService {

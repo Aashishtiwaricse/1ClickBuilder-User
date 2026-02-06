@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Controllers/Search/searchControllers.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/NexusProductById/productById.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartControllers/Search/searchControllers.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/NexusProductById/productById.dart';
+
 import 'package:shimmer/shimmer.dart';
 
 
@@ -13,7 +14,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final NexusSearchController ctrl = Get.find();
+  final FlipkartSearchController ctrl = Get.find();
 
   @override
   void dispose() {

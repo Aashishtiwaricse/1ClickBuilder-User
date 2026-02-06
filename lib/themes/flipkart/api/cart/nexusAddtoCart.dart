@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 
 enum CartAddResult { success, alreadyExists, notLoggedIn, error }
 
@@ -24,7 +24,7 @@ class CartApiService {
         return CartAddResult.notLoggedIn;
       }
 
-      final url = '${NexusAppConstant.baseUrl}${NexusAppConstant.addToCartUrl}$vendorId';
+      final url = '${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.addToCartUrl}$vendorId';
       print('Add to Cart URL: $url');
       print('Token being sent: $token');
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/BestSellers/bestSellers.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/Screens/Home/BestSellerScreen/nexusSellerCard.dart';
-import 'package:one_click_builder/themes/Nexus/api/BestSeller/NexusBestSeller.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/BestSellers/bestSellers.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/BestSellerScreen/nexusSellerCard.dart';
+import 'package:one_click_builder/themes/Flipkart/api/BestSeller/NexusBestSeller.dart';
+
 import 'package:shimmer/shimmer.dart';
 
 class BestSellerScreen extends StatefulWidget {
@@ -17,8 +18,8 @@ class _BestSellerScreenState extends State<BestSellerScreen> {
   BestSellerResponse? bestSellerResponse;
   bool loading = true;
   late Worker _vendorWorker;
-  final NexusVendorController vendorController =
-      Get.find<NexusVendorController>();
+  final FlipkartVendorController vendorController =
+      Get.find<FlipkartVendorController>();
 
   @override
 void initState() {
@@ -109,32 +110,33 @@ void initState() {
           ),
         )
       : 
-          GridView.builder(
-            shrinkWrap: true, // 🔑 REQUIRED inside Column / ScrollView
-            physics: const NeverScrollableScrollPhysics(), // 🔑
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: bestSellerResponse?.data?.length ?? 0,
-            gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // ✅ TWO cards per row
-              crossAxisSpacing: 11,
-              mainAxisSpacing: 12,
-            childAspectRatio: height < 360 ? 0.39 : 0.63,
+         GridView.builder(
+  shrinkWrap: true,
+  physics: const NeverScrollableScrollPhysics(),
+  padding: const EdgeInsets.symmetric(horizontal: 12),
+  itemCount: bestSellerResponse?.data?.length ?? 0,
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2,
+    crossAxisSpacing: 12,
+    mainAxisSpacing: 12,
 
-            ),
-            itemBuilder: (context, index) {
-              final product = bestSellerResponse?.data?[index].product;
-              if (product == null) return const SizedBox();
+    // ⭐ Flipkart-style ratio
+    childAspectRatio: height < 360 ? 0.58 : 0.67,
+  ),
+  itemBuilder: (context, index) {
+    final product = bestSellerResponse?.data?[index].product;
+    if (product == null) return const SizedBox();
 
-              final image = product.images!.isNotEmpty
-                  ? product.images!.first.image ?? ""
-                  : product.productImage ?? "";
+    final image = product.images!.isNotEmpty
+        ? product.images!.first.image ?? ""
+        : product.productImage ?? "";
 
-              return ProductCard(
-                product: product,
-                imageUrl: image,
-              );
-            },
-          ),
+    return ProductCard(
+      product: product,
+      imageUrl: image,
+    );
+  },
+)
       ],
     );
   }

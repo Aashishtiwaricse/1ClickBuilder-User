@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Screens/Home/SiginScreen/signinScreen.dart';
+import 'package:one_click_builder/themes/Flipkart/Screens/Home/SiginScreen/signinScreen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -85,7 +85,7 @@ final response = await http.put(
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => NexusSignInScreen()),
+        MaterialPageRoute(builder: (_) => FlipkartSignInScreen()),
         (route) => false,
       );
     } 

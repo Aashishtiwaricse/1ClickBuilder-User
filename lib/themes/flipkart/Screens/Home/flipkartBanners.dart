@@ -1,12 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:one_click_builder/themes/Nexus/NexusVendorId/vendorid.dart';
-import 'package:one_click_builder/themes/Nexus/api/banners/bannersApi.dart';
+import 'package:one_click_builder/themes/Flipkart/FlipkartVendorId/vendorid.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/Banners/banner.dart';
+import 'package:one_click_builder/themes/Flipkart/api/banners/bannersApi.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:one_click_builder/themes/Nexus/Modules/Banners/banner.dart';
 
 
 
@@ -19,8 +19,8 @@ class FlipkartBannerScreen extends StatefulWidget {
 
 class _FlipkartBannerScreenState extends State<FlipkartBannerScreen> {
   // ✅ SAFELY initialized controller
-  final NexusVendorController vendorController =
-      Get.find<NexusVendorController>();
+  final FlipkartVendorController vendorController =
+      Get.find<FlipkartVendorController>();
 
   final CarouselSliderController _carouselController =
       CarouselSliderController();

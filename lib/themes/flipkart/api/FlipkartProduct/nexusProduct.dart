@@ -1,13 +1,13 @@
 import 'package:http/http.dart' as http;
-import 'package:one_click_builder/themes/Nexus/Modules/NexusProducts/NexusProduct.dart';
-import 'package:one_click_builder/themes/Nexus/utility/app_constant.dart';
+import 'package:one_click_builder/themes/Flipkart/Modules/FlipkartProducts/FlipkartProduct.dart';
+import 'package:one_click_builder/themes/Flipkart/utility/app_constant.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class ProductService {
   Future<ProductListResponse?> getProducts(String vendorId) async {
     final url =
-        "${NexusAppConstant.baseUrl}${NexusAppConstant.product_list}$vendorId";
+        "${FlipkartAppConstant.baseUrl}${FlipkartAppConstant.product_list}$vendorId";
 
     debugPrint("🟡 PRODUCT API URL: $url");
 

@@ -156,14 +156,14 @@ class _NexusCategoryScreenState extends State<NexusCategoryScreen> {
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AllCategoriesScreen(),
-                    ),
-                  );
-                },
+                // onTap: () {
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //       builder: (_) => const AllCategoriesScreen(),
+                //     ),
+                //   );
+                // },
                 child: Text(
                   "See all",
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -216,15 +216,15 @@ class _NexusCategoryScreenState extends State<NexusCategoryScreen> {
     return GestureDetector(
       onTap: () {
         final vendorController = Get.find<FlipkartVendorController>();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => AllSubCategory(
-              subcategoryId: vendorController.vendorId.value,
-              subcategoryName: item.name.toString(),
-            ),
-          ),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (_) => AllSubCategory(
+        //       subcategoryId: vendorController.vendorId.value,
+        //       subcategoryName: item.name.toString(),
+        //     ),
+        //   ),
+        // );
       },
       child: Column(
         children: [
